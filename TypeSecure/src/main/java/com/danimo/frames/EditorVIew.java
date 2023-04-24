@@ -243,6 +243,8 @@ public class EditorVIew extends javax.swing.JFrame {
                     // Guardar el contenido del JTextArea en el archivo
                     try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
                         writer.write(text);
+                        jTabbedPane1.setTitleAt(indexPanelSeleccionado,file.getName());
+                        JOptionPane.showMessageDialog(this, "Se guardo correctamente");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

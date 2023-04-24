@@ -1,0 +1,24 @@
+// declaración de variables
+const TOTAL: number = 100;
+let name: string = 'Jonh';
+let score1: number = 20, lastname: string = 'Perez Leon';
+let _flag: boolean = score1 > TOTAL && FALSE || true;
+let entero1: bigint = 144n;
+let _flag2: boolean; //  _flag2 tiene el valor de undefined
+const SUMA = 1000;// se asume que SUMA es de tipo number
+const name = 'Jose Perez Leon'; // name es de tipo string
+let __value = name != 'Luis Miguel'; // __value es de tipo boolean
+let enterito = 125n + 2n; // enterito es de tipo bigint
+let amount = 12, quantity = amount++; // amount y quantity son de tipo number
+let a = 100n, b = 10;
+let div = Number(a) / b;
+let b = BigInt(a) / 100n;
+// My name is Jose Perez
+console.log("My name is:", fullname);
+// My name is Jose Perez and I'm 21 years old
+console.log("My name is", fullname, "and I'm", age, "years old");
+const greeting = "Hello" + " world";
+console.log(BigInt("  ")); // 0n
+console.log(BigInt(true)); // 1n
+console.log(BigInt(true && false)); // 0n
+

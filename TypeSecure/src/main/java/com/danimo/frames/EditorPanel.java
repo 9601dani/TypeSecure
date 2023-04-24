@@ -4,8 +4,10 @@
  */
 package com.danimo.frames;
 
+import com.danimo.ParserHandleSecure;
 import com.danimo.objects.NumeroLinea;
 import java.awt.Color;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -123,6 +125,14 @@ public class EditorPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
         System.out.println("Compillando "+ jTextArea1.getText());
         System.out.println("vamos a compilar");
+        String texto= jTextArea1.getText();
+        
+        if(texto!= "" && !texto.isEmpty()){
+             ParserHandleSecure.compilerSecure(texto);
+        }else{
+            JOptionPane.showMessageDialog(this, "Necesitas ingresar texto primero");
+        }
+       
     }//GEN-LAST:event_buttom_compilarActionPerformed
 
     public  String getPath(){

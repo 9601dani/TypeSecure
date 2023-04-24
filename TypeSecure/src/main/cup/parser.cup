@@ -1,0 +1,132 @@
+package com.danimo;
+
+class ParserSecure;
+parser code {:
+        public ParserSecure(SecureLex lexer){
+            super(lexer);
+        }
+
+:}
+/*terminales para declare*/
+terminal Token PUNTO_COMA,COMA,DOS_PUNTOS,IGUAL,CONST,LET;
+/*operaciones*/
+terminal Token OR,AND,NOT,DISTINTO_QUE,MENOR_QUE,MENOR_IGUAL_QUE,MAYOR_QUE,MAYOR_IGUAL_QUE,DOBLE_IGUAL
+          ,MAS, MENOS,MULTIPLY,DIVIDE,BIG_INT,ENTERO,NUM_DECIMAL,CADENA,FALSE,TRUE,LITERAL,L_PARENT,R_PARENT;
+terminal Token T_NUMBER,T_BIGINT,T_STRING,T_BOOLEAN,T_VOID,T_UNDEFINED,CONSOLE,F_NUMBER,F_BIGINT,F_BOOLEAN,F_STRING,LENGHT,
+CHARAT,TO_LOWER_CASE,TO_UPPER_CASE,CONCAT,IF,ELSE,FOR,WHILE,DO,BREAK,CONTINUE,FUNCTION,RETURN,MATH_E,MATH_PI,MATH_SQRT2,
+MATH_ABS,MATH_CEIL,MATH_COS,MATH_SIN,MATH_TAN,MATH_EXP,MATH_FLOOR,MATH_POW,MATH_SQRT,MATH_RANDOM,PRINT_AST,GET_SYMBOL_TABLE,
+SYM,ERROR,MOD,MAS_MAS,MENOS_MENOS, L_LLAVE, R_LLAVE;
+nonterminal inic,statements,instrucciones,instruccion,declare,declare_pro,type,type_f,settear,a,
+            b,c,d,e,f,g,h,i,j,if_pro,while_pro,console_pro,expr,else_pro;
+start with inic;
+
+inic ::= statements
+;
+
+statements ::= instrucciones
+;
+
+instrucciones ::= instrucciones instruccion
+				 | instruccion
+;
+
+instruccion ::= declare PUNTO_COMA
+                | console_pro
+				| settear
+				| if_pro
+				| while_pro
+				| h PUNTO_COMA
+;
+
+declare ::= declare COMA declare_pro
+		|	declare_pro
+;
+
+declare_pro ::= type_f LITERAL DOS_PUNTOS type IGUAL a
+			|	LITERAL DOS_PUNTOS type IGUAL a
+			|   type_f LITERAL IGUAL a
+			| 	type_f LITERAL DOS_PUNTOS type
+			|   LITERAL IGUAL a
+;
+
+type ::=  T_NUMBER
+	    | T_BIGINT
+	    | T_STRING
+		| T_BOOLEAN
+		|
+
+;
+
+type_f ::=	CONST
+		   | LET
+;
+
+console_pro ::=
+            CONSOLE L_PARENT expr R_PARENT PUNTO_COMA
+;
+expr ::=
+        expr COMA a
+        | a
+;
+if_pro ::= IF L_PARENT a R_PARENT L_LLAVE instrucciones R_LLAVE else_pro
+          |  IF L_PARENT a R_PARENT L_LLAVE R_LLAVE else_pro
+;
+else_pro ::=
+            ELSE IF L_PARENT a R_PARENT L_LLAVE instrucciones R_LLAVE else_pro
+          | ELSE L_LLAVE instrucciones R_LLAVE
+          |
+;
+
+
+a ::= a OR b
+	| b
+;
+
+b ::= b AND c
+	| c
+;
+
+c ::= NOT c
+	| d
+;
+
+d ::= d DISTINTO_QUE e
+	| d MENOR_QUE e
+	| d MENOR_IGUAL_QUE e
+	| d MAYOR_QUE e
+	| d MAYOR_IGUAL_QUE e
+	| d DOBLE_IGUAL e
+	| e
+;
+e ::=  	e MAS f
+	 |	e MENOS f
+	 |	f
+;
+f ::=  	f MULTIPLY g
+	 |	f DIVIDE g
+	 |  f MOD g
+	 |	g
+;
+g::= F_NUMBER L_PARENT a R_PARENT
+       | F_BIGINT L_PARENT a R_PARENT
+       | F_BOOLEAN L_PARENT a R_PARENT
+       | F_STRING  L_PARENT a R_PARENT
+       | h
+;
+h::=    h MAS_MAS
+      | h MENOS_MENOS
+      | i
+;
+i ::= MENOS j
+  | MAS j
+  | j
+;
+j ::=  BIG_INT
+	|ENTERO
+    | NUM_DECIMAL 
+    | CADENA
+    | FALSE
+    | TRUE
+    | LITERAL
+    | L_PARENT a R_PARENT
+;
