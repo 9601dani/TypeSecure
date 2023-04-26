@@ -21,4 +21,75 @@ const greeting = "Hello" + " world";
 console.log(BigInt("  ")); // 0n
 console.log(BigInt(true)); // 1n
 console.log(BigInt(true && false)); // 0n
+if (true) {
+	console.log('Esto siempre se ejecutará');
+}
 
+if (false) {
+	const a: number = 10, b: bigint = 12n;
+	if (a < b) {
+		console.log('a < b');
+	}
+	console.log('esto nunca se ejecutara');
+}
+
+
+const x = 10, y = 20;
+let z = 100;
+if (x > y) {
+	z++;
+	console.log('El mayor es: ' + x);
+} else if (x < y) {
+	z--;
+	console.log('El mayor es: ' + y);
+} else {
+	console.log('Los numeros son iguales');
+}
+
+while(condition) { 
+   // statements if the condition is true 
+}
+
+
+let num : number = 5; 
+let factorial : number = 1; 
+
+while(num >= 1) { 
+   factorial = factorial * num; 
+   num--; 
+} 
+console.log("The factorial  is "+factorial);  
+
+do {
+// code block to be executed
+}
+while (condition > expression);
+
+
+let i: number = 2;
+do {
+    console.log("Block statement execution no." + i );
+    i++;
+} while ( i < 4);
+
+
+for (let i = 0; i < 3; i++) {
+  console.log ("Block statement execution no." + i);
+}
+
+const num:number = 5; 
+let i:number; 
+let factorial = 1; 
+
+for(i = num; i>= 1; i--) {
+
+}
+console.log(factorial);
+
+
+for (let i = 0, j = 10; i < j && j > 5; i++) {
+	console.log('i: ' + i + ', j: ' + j);
+	if (i % 2 == 0) {
+		j = j - 2;
+	}
+}

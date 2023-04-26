@@ -1,5 +1,5 @@
 package com.danimo;
-
+import com.danimo.models.*;
 class ParserSecure;
 parser code {:
         public ParserSecure(SecureLex lexer){
@@ -16,26 +16,30 @@ terminal Token T_NUMBER,T_BIGINT,T_STRING,T_BOOLEAN,T_VOID,T_UNDEFINED,CONSOLE,F
 CHARAT,TO_LOWER_CASE,TO_UPPER_CASE,CONCAT,IF,ELSE,FOR,WHILE,DO,BREAK,CONTINUE,FUNCTION,RETURN,MATH_E,MATH_PI,MATH_SQRT2,
 MATH_ABS,MATH_CEIL,MATH_COS,MATH_SIN,MATH_TAN,MATH_EXP,MATH_FLOOR,MATH_POW,MATH_SQRT,MATH_RANDOM,PRINT_AST,GET_SYMBOL_TABLE,
 SYM,ERROR,MOD,MAS_MAS,MENOS_MENOS, L_LLAVE, R_LLAVE;
-nonterminal inic,statements,instrucciones,instruccion,declare,declare_pro,type,type_f,settear,a,
-            b,c,d,e,f,g,h,i,j,if_pro,while_pro,console_pro,expr,else_pro;
+nonterminal instrucciones,instruccion,declare,declare_pro,type,type_f,settear,a,
+            b,c,d,e,f,g,h,i,j,if_pro,while_pro,console_pro,expr,else_pro,for_pro,def_for,condition
+            , do_while_pro,sumadores_pro;
+nonterminal Ast inic;
 start with inic;
 
-inic ::= statements
+inic ::=
+        instrucciones:a {: RESULT= (Ast) a;:}
 ;
 
-statements ::= instrucciones
+instrucciones ::=
+                    instrucciones instruccion
+				 |  instruccion
 ;
 
-instrucciones ::= instrucciones instruccion
-				 | instruccion
-;
-
-instruccion ::= declare PUNTO_COMA
-                | console_pro
-				| settear
-				| if_pro
-				| while_pro
-				| h PUNTO_COMA
+instruccion ::=
+                    declare PUNTO_COMA
+                |   console_pro
+				|   settear
+				|   if_pro
+				|   for_pro
+				|   while_pro
+				|   do_while_pro
+				|   sumadores_pro PUNTO_COMA
 ;
 
 declare ::= declare COMA declare_pro
@@ -77,6 +81,23 @@ else_pro ::=
           |
 ;
 
+for_pro ::=
+           FOR L_PARENT declare PUNTO_COMA a PUNTO_COMA sumadores_pro  R_PARENT L_LLAVE instrucciones R_LLAVE
+         |  FOR L_PARENT declare PUNTO_COMA a PUNTO_COMA sumadores_pro  R_PARENT L_LLAVE  R_LLAVE
+;
+while_pro ::=
+            WHILE L_PARENT a R_PARENT L_LLAVE instrucciones R_LLAVE
+           | WHILE L_PARENT a R_PARENT L_LLAVE  R_LLAVE
+;
+
+do_while_pro::=
+             DO L_LLAVE instrucciones  R_LLAVE WHILE L_PARENT  a R_PARENT PUNTO_COMA
+           | DO L_LLAVE  R_LLAVE WHILE L_PARENT  a R_PARENT PUNTO_COMA
+;
+sumadores_pro::=
+            LITERAL MAS_MAS
+          | LITERAL MENOS_MENOS
+;
 
 a ::= a OR b
 	| b
@@ -113,15 +134,11 @@ g::= F_NUMBER L_PARENT a R_PARENT
        | F_STRING  L_PARENT a R_PARENT
        | h
 ;
-h::=    h MAS_MAS
-      | h MENOS_MENOS
-      | i
+h ::= MENOS i
+  | MAS i
+  | i
 ;
-i ::= MENOS j
-  | MAS j
-  | j
-;
-j ::=  BIG_INT
+i ::=  BIG_INT
 	|ENTERO
     | NUM_DECIMAL 
     | CADENA
