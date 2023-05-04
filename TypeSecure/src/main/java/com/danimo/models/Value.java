@@ -53,14 +53,42 @@ public class Value extends Instruccion{
         }
         return null;
     }
+    public enum ValueType{
+        BIG_INT,
+        ENTERO,
+        NUM_DECIMAL,
+        CADENA,
+        FALSE,
+        TRUE,
+        BOOLEAN,
+        LITERAL
+    }
+
+    public Object getValue() {
+        return this.value;
+    }
+
+    public void setValue(final Object value) {
+        this.value = value;
+    }
+
+    public ValueType getType() {
+        return this.type;
+    }
+
+    public void setType(final ValueType type) {
+        this.type = type;
+    }
+
+    @Override
+    public String toString() {
+        return "\nValue{" +
+                "value=" + value +
+                ", type=" + type +
+                ", line=" + line +
+                ", column=" + column +
+                '}';
+    }
 }
-enum ValueType{
-    BIG_INT,
-    ENTERO,
-    NUM_DECIMAL,
-    CADENA,
-    FALSE,
-    TRUE,
-    BOOLEAN,
-    LITERAL
-}
+
+

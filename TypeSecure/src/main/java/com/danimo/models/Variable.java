@@ -4,6 +4,7 @@ public class Variable {
     public String id;
     public VariableType type;
     public Object value;
+    public TypeV type_modi;
 
     public Variable() {
     }
@@ -32,15 +33,27 @@ public class Variable {
         this.value = value;
     }
 
-    enum VariableType{
+    public TypeV getType_modi() {
+        return this.type_modi;
+    }
+
+    public void setType_modi(final TypeV type_modi) {
+        this.type_modi = type_modi;
+    }
+    public enum VariableType{
         NUMBER,
         BIGINT,
         STRING,
         BOOLEAN,
         VOID,
-        UNDEFINED
+        UNDEFINED,
+        DEFINIRLA
     }
-
+    public enum TypeV{
+        LET,
+        CONST
+    }
 }
+
 
 

@@ -9,7 +9,7 @@ const SUMA = 1000;// se asume que SUMA es de tipo number
 const name = 'Jose Perez Leon'; // name es de tipo string
 let __value = name != 'Luis Miguel'; // __value es de tipo boolean
 let enterito = 125n + 2n; // enterito es de tipo bigint
-let amount = 12, quantity = amount++; // amount y quantity son de tipo number
+let amount = 12, quantity = amount; // amount y quantity son de tipo number
 let a = 100n, b = 10;
 let div = Number(a) / b;
 let b = BigInt(a) / 100n;
@@ -92,4 +92,8 @@ for (let i = 0, j = 10; i < j && j > 5; i++) {
 	if (i % 2 == 0) {
 		j = j - 2;
 	}
+}
+
+if(a > 10 && !false || !true){
+	let c : number = Number(String(BigInt("-15")));
 }

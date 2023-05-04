@@ -1,10 +1,80 @@
 package com.danimo;
 import com.danimo.models.*;
+import com.danimo.objects.Token;
+import java.util.ArrayList;
+import java_cup.runtime.Symbol;
 class ParserSecure;
 parser code {:
         public ParserSecure(SecureLex lexer){
             super(lexer);
         }
+       public Symbol scan() throws Exception {
+                  Symbol symbol = this.getScanner().next_token();
+                  if (symbol == null) {
+                      return this.getSymbolFactory().newSymbol("END_OF_FILE", this.EOF_sym());
+                  }
+
+                  while(symbol != null && symbol.sym == ParserSecureSym.SYM) {
+                      this.report_expected_token_ids();
+                      System.out.println("Ignorando: " + symbol.value.toString());
+                      Token token = (Token) symbol.value;
+                     // errors.add(new WorldError(token.getValue(),token.getLine(),token.getColumn(), ErrorType.LEXICO,"No existe esta cadena en el lenguaje"));
+                      symbol = this.getScanner().next_token();
+                  }
+
+                  if (symbol == null) {
+                      return this.getSymbolFactory().newSymbol("END_OF_FILE", this.EOF_sym());
+                  }
+
+                  return symbol;
+          }
+
+          public void report_error(String message, Object info) {
+              System.out.println("public void report_error");
+          }
+
+          public void report_fatal_error(String message, Object info) {
+              System.out.println("public void report_fatal_error");
+          }
+
+          public void syntax_error(Symbol cur_token) {
+              Token token = (Token) cur_token.value;
+
+              if (cur_token.sym == ParserSecureSym.EOF) {
+      //          String er = "Simbolo inesperado, se esperaba: "+ simbolosTerminales.obtenerSimbolos(expected_token_ids()).toString();
+                  String er = "Simbolo inesperado";
+               //   errors.add(new WorldError("Fin del archivo", token.getLine(),token.getColumn(), ErrorType.SINTACTICO,er));
+                  System.out.println(er);
+              } else {
+                  String er = "Simbolo inesperado";
+                  //errors.add(new WorldError(token.getValue(), token.getLine(), token.getColumn(),ErrorType.SINTACTICO,er));
+                  System.out.println(er);
+              }
+          }
+
+          public void unrecovered_syntax_error(Symbol cur_token) {
+              if (cur_token.sym == ParserSecureSym.EOF) {
+                  Token tok = (Token) cur_token.value;
+                  String er = "Error irrecuperable se llego al final del archivo";
+                //  errors.add(new WorldError("FIN ARCHIVO", tok.getLine(), tok.getColumn(), ErrorType.SINTACTICO, er));
+                  System.out.println(er);
+              } else {
+                  Token tok = (Token) cur_token.value;
+                  //String er = "Error irrecuperable, un posible simbolo esperado: "+ simbolosTerminales.obtenerSimbolos(expected_token_ids()).toString();
+                  String er = "Error irrecuperable resuelva el error anterior";
+               //   errors.add(new WorldError(tok.getValue(), tok.getLine(), tok.getColumn(), ErrorType.SINTACTICO, er));
+                  System.out.println(er);
+              }
+          }
+
+          public Variable.TypeV returnTypeV(String data){
+                if(data.equalsIgnoreCase("CONST")){
+                    return Variable.TypeV.CONST;
+                }else if(data.equalsIgnoreCase("LET")){
+                    return Variable.TypeV.LET;
+                }
+                return null;
+          }
 
 :}
 /*terminales para declare*/
@@ -16,134 +86,230 @@ terminal Token T_NUMBER,T_BIGINT,T_STRING,T_BOOLEAN,T_VOID,T_UNDEFINED,CONSOLE,F
 CHARAT,TO_LOWER_CASE,TO_UPPER_CASE,CONCAT,IF,ELSE,FOR,WHILE,DO,BREAK,CONTINUE,FUNCTION,RETURN,MATH_E,MATH_PI,MATH_SQRT2,
 MATH_ABS,MATH_CEIL,MATH_COS,MATH_SIN,MATH_TAN,MATH_EXP,MATH_FLOOR,MATH_POW,MATH_SQRT,MATH_RANDOM,PRINT_AST,GET_SYMBOL_TABLE,
 SYM,ERROR,MOD,MAS_MAS,MENOS_MENOS, L_LLAVE, R_LLAVE;
-nonterminal instrucciones,instruccion,declare,declare_pro,type,type_f,settear,a,
-            b,c,d,e,f,g,h,i,j,if_pro,while_pro,console_pro,expr,else_pro,for_pro,def_for,condition
-            , do_while_pro,sumadores_pro;
+nonterminal instruccion,type,type_f,settear,a,
+            b,c,d,e,f,g,h,i,if_pro,while_pro,console_pro,else_pro,for_pro
+            , do_while_pro,sumadores_pro,assignacion_pro,funtion_pro, parametros, call_funtion;
 nonterminal Ast inic;
+nonterminal  Declare declare_pro;
+nonterminal ArrayList<Instruccion> instrucciones, declare,expr;
 start with inic;
 
 inic ::=
-        instrucciones:a {: RESULT= (Ast) a;:}
+        instrucciones:a
+        {:
+            Ast.getInstancia().setArbol_ast(((ArrayList<Instruccion>) a));
+            RESULT= Ast.getInstancia();
+        :}
 ;
 
 instrucciones ::=
-                    instrucciones instruccion
-				 |  instruccion
+                    instrucciones:a instruccion:b
+                    {:
+                        ((ArrayList<Instruccion>)a).add((Instruccion)b);
+                        RESULT= a;
+                    :}
+				 |  instruccion:b
+				    {:
+				       RESULT= new ArrayList<Instruccion>();
+                       RESULT.add((Instruccion)b);
+				    :}
 ;
 
 instruccion ::=
-                    declare PUNTO_COMA
-                |   console_pro
-				|   settear
-				|   if_pro
-				|   for_pro
-				|   while_pro
-				|   do_while_pro
-				|   sumadores_pro PUNTO_COMA
+                    declare_pro:pro PUNTO_COMA {:RESULT = pro; :}
+                |   assignacion_pro:assign PUNTO_COMA {:RESULT = assign;:}
+                |   console_pro:pro {:RESULT = pro;:}
+				|   settear:pro {:RESULT = pro;:}
+				|   if_pro:pro  {:RESULT = pro;:}
+				|   for_pro:pro {:RESULT = pro;:}
+				|   do_while_pro:pro    {:RESULT = pro;:}
+				|   while_pro:pro   {:RESULT = pro;:}
+				|   sumadores_pro:pro PUNTO_COMA    {:RESULT = pro;:}
+				|   funtion_pro:pro {:RESULT = pro;:}
+				|   call_funtion:pro PUNTO_COMA     {:RESULT = pro;:}
 ;
 
-declare ::= declare COMA declare_pro
-		|	declare_pro
+declare_pro ::=
+            type_f:a declare:b
+                {:
+                            RESULT = new Declare(((Token)a).getLine(),((Token)a).getColumn(),returnTypeV(((Token)a).getLexeme()), (ArrayList<Instruccion>)b);
+                :}
+;
+declare ::= declare:a COMA assignacion_pro:b
+               {:
+                ((ArrayList<Instruccion>)a).add((Instruccion)b);
+                RESULT= a;
+               :}
+		|	assignacion_pro:b
+		        {:
+		         RESULT= new ArrayList<Instruccion>();
+                 RESULT.add((Assingment)b);
+		        :}
 ;
 
-declare_pro ::= type_f LITERAL DOS_PUNTOS type IGUAL a
-			|	LITERAL DOS_PUNTOS type IGUAL a
-			|   type_f LITERAL IGUAL a
-			| 	type_f LITERAL DOS_PUNTOS type
-			|   LITERAL IGUAL a
+assignacion_pro ::=
+                LITERAL:id DOS_PUNTOS type:type IGUAL a:pro1
+                {:
+                /*RESULT = new Assingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),(Variable.VariableType)type, (Instruccion) instruccion);*/
+                                RESULT = new Assingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),(Variable.VariableType)type, (Instruccion) pro1);
+                :}
+			| 	LITERAL:id DOS_PUNTOS type
+			    {:
+                RESULT = new Assingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),Variable.VariableType.UNDEFINED,null);
+			    :}
+			|   LITERAL:id IGUAL a:pro1
+			    {:
+                RESULT = new Assingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),Variable.VariableType.DEFINIRLA, (Instruccion) pro1);
+			    :}
+			|   LITERAL:id IGUAL call_funtion
 ;
 
-type ::=  T_NUMBER
-	    | T_BIGINT
-	    | T_STRING
-		| T_BOOLEAN
+type ::=  T_NUMBER {: RESULT= Variable.VariableType.NUMBER;:}
+	    | T_BIGINT {: RESULT= Variable.VariableType.BIGINT;:}
+	    | T_STRING {: RESULT= Variable.VariableType.STRING;:}
+		| T_BOOLEAN {: RESULT= Variable.VariableType.BOOLEAN;:}
+		| T_VOID {: RESULT= Variable.VariableType.VOID;:}
+		| T_UNDEFINED {: RESULT= Variable.VariableType.UNDEFINED;:}
 		|
 
 ;
 
-type_f ::=	CONST
-		   | LET
+type_f ::=	CONST:a {:RESULT = ((Token)a);:}
+		   | LET:a  {:RESULT = (Token)a;:}
 ;
 
 console_pro ::=
-            CONSOLE L_PARENT expr R_PARENT PUNTO_COMA
+            CONSOLE:pro L_PARENT expr:pro2 R_PARENT PUNTO_COMA
+            {:RESULT = new ConsoleLog(pro.getLine(), pro.getColumn(),(ArrayList<Instruccion>)pro2 );:}
 ;
 expr ::=
-        expr COMA a
-        | a
+        expr:prod COMA a:prod1
+        {:
+        ((ArrayList<Instruccion>)prod).add((Instruccion)prod1);
+        RESULT= prod;
+        :}
+        | a:prod
+        {:
+        RESULT= new ArrayList<Instruccion>();
+        RESULT.add((Instruccion)prod);
+        :}
 ;
-if_pro ::= IF L_PARENT a R_PARENT L_LLAVE instrucciones R_LLAVE else_pro
-          |  IF L_PARENT a R_PARENT L_LLAVE R_LLAVE else_pro
+if_pro ::= IF:pro_if L_PARENT a:pi2 R_PARENT L_LLAVE instrucciones:pi4 R_LLAVE else_pro:pi5
+{:RESULT= new IfState(pro_if.getLine(), pro_if.getColumn(),(Instruccion)pi2,(ArrayList<Instruccion>)pi4,(Instruccion)pi5);:}
+          |  IF:pro_if L_PARENT a:pi2 R_PARENT L_LLAVE R_LLAVE else_pro:pi5
+{:RESULT = new IfState(pro_if.getLine(), pro_if.getColumn(),(Instruccion)pi2,null,(Instruccion)pi5);:}
 ;
 else_pro ::=
-            ELSE IF L_PARENT a R_PARENT L_LLAVE instrucciones R_LLAVE else_pro
-          | ELSE L_LLAVE instrucciones R_LLAVE
+            ELSE:pro_else IF L_PARENT a:pro2 R_PARENT L_LLAVE instrucciones:pro4 R_LLAVE else_pro: pro5
+{:RESULT = new IfState(pro_else.getLine(), pro_else.getColumn(), (Instruccion)pro2, (ArrayList<Instruccion>)pro4, (Instruccion)pro5);:}
+          | ELSE:pro_else L_LLAVE instrucciones:pro2 R_LLAVE
+{:RESULT = new ElseState(pro_else.getLine(), pro_else.getColumn(), (ArrayList<Instruccion>)pro2);:}
           |
 ;
 
 for_pro ::=
            FOR L_PARENT declare PUNTO_COMA a PUNTO_COMA sumadores_pro  R_PARENT L_LLAVE instrucciones R_LLAVE
          |  FOR L_PARENT declare PUNTO_COMA a PUNTO_COMA sumadores_pro  R_PARENT L_LLAVE  R_LLAVE
+         |  FOR L_PARENT declare_pro PUNTO_COMA a PUNTO_COMA sumadores_pro  R_PARENT L_LLAVE instrucciones R_LLAVE
+         |  FOR L_PARENT declare_pro PUNTO_COMA a PUNTO_COMA sumadores_pro  R_PARENT L_LLAVE  R_LLAVE
 ;
 while_pro ::=
-            WHILE L_PARENT a R_PARENT L_LLAVE instrucciones R_LLAVE
-           | WHILE L_PARENT a R_PARENT L_LLAVE  R_LLAVE
+            WHILE:prod L_PARENT a:prod3 R_PARENT L_LLAVE instrucciones:prod6 R_LLAVE
+{:RESULT=new While(prod.getLine(), prod.getColumn(),(Instruccion)prod3, (ArrayList<Instruccion>)prod6 );:}
+           | WHILE:prod L_PARENT a:prod3 R_PARENT L_LLAVE  R_LLAVE
+{:RESULT=new While(prod.getLine(), prod.getColumn(),(Instruccion)prod3, null );:}
+
 ;
 
 do_while_pro::=
-             DO L_LLAVE instrucciones  R_LLAVE WHILE L_PARENT  a R_PARENT PUNTO_COMA
-           | DO L_LLAVE  R_LLAVE WHILE L_PARENT  a R_PARENT PUNTO_COMA
+             DO:prod L_LLAVE instrucciones:prod6  R_LLAVE WHILE L_PARENT  a:prod3 R_PARENT PUNTO_COMA
+{:RESULT=new DoWhile(prod.getLine(), prod.getColumn(),(Instruccion)prod3, (ArrayList<Instruccion>)prod6 );:}
+           | DO:prod L_LLAVE  R_LLAVE WHILE L_PARENT  a:prod3 R_PARENT PUNTO_COMA
+{:RESULT=new DoWhile(prod.getLine(), prod.getColumn(),(Instruccion)prod3, null );:}
+;
+funtion_pro ::=
+                FUNCTION LITERAL L_PARENT  R_PARENT DOS_PUNTOS type L_LLAVE instrucciones R_LLAVE
+             |  FUNCTION LITERAL L_PARENT parametros R_PARENT DOS_PUNTOS type L_LLAVE instrucciones R_LLAVE
+             |  FUNCTION LITERAL L_PARENT  R_PARENT  L_LLAVE instrucciones R_LLAVE
+             |  FUNCTION LITERAL L_PARENT parametros R_PARENT  L_LLAVE instrucciones R_LLAVE
+;
+parametros ::=
+              parametros COMA assignacion_pro
+              | assignacion_pro
+;
+call_funtion::=
+                LITERAL L_PARENT assignacion_pro R_PARENT
+              |  LITERAL L_PARENT R_PARENT
 ;
 sumadores_pro::=
             LITERAL MAS_MAS
+{::}
           | LITERAL MENOS_MENOS
+{::}
 ;
 
-a ::= a OR b
-	| b
+a ::= a:pro1 OR b:pro2
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.OR,(Instruccion)pro1,(Instruccion)pro2);:}
+	| b:pro1
+{:RESULT = pro1;:}
 ;
 
-b ::= b AND c
-	| c
+b ::= b:pro1 AND c:pro2
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.AND,(Instruccion)pro1,(Instruccion)pro2);:}
+	| c:pro1
+{:RESULT = pro1;:}
 ;
 
-c ::= NOT c
-	| d
+c ::= NOT c:pro1
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.NOT,(Instruccion)pro1,(Instruccion)pro1);:}
+	| d:pro1
+{:RESULT = pro1;:}
 ;
 
-d ::= d DISTINTO_QUE e
-	| d MENOR_QUE e
-	| d MENOR_IGUAL_QUE e
-	| d MAYOR_QUE e
-	| d MAYOR_IGUAL_QUE e
-	| d DOBLE_IGUAL e
-	| e
+d ::= d:pro1 DISTINTO_QUE e:pro2
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.DISTINTO_QUE,(Instruccion)pro1,(Instruccion)pro2);:}
+	| d:pro1 MENOR_QUE e:pro2
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.MENOR_QUE,(Instruccion)pro1,(Instruccion)pro2);:}
+	| d:pro1 MENOR_IGUAL_QUE e:pro2
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.MENOR_IGUAL_QUE,(Instruccion)pro1,(Instruccion)pro2);:}
+	| d:pro1 MAYOR_QUE e:pro2
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.MAYOR_QUE,(Instruccion)pro1,(Instruccion)pro2);:}
+	| d:pro1 MAYOR_IGUAL_QUE e:pro2
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.MAYOR_IGUAL_QUE,(Instruccion)pro1,(Instruccion)pro2);:}
+	| d:pro1 DOBLE_IGUAL e:pro2
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.DOBLE_IGUAL,(Instruccion)pro1,(Instruccion)pro2);:}
+	| e:pro1 {:RESULT= pro1;:}
 ;
-e ::=  	e MAS f
-	 |	e MENOS f
-	 |	f
+e ::=  	e:pro1 MAS f:pro2
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.MAS,(Instruccion)pro1,(Instruccion)pro2);:}
+	 |	e:pro1 MENOS f:pro2
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.MENOS,(Instruccion)pro1,(Instruccion)pro2);:}
+	 |	f:pro1 {:RESULT = pro1;:}
 ;
-f ::=  	f MULTIPLY g
-	 |	f DIVIDE g
-	 |  f MOD g
-	 |	g
+f ::=  	f:pro1 MULTIPLY g:pro2
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.MULTIPLY,(Instruccion)pro1,(Instruccion)pro2);:}
+	 |	f:pro1 DIVIDE g:pro2
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.DIVIDE,(Instruccion)pro1,(Instruccion)pro2);:}
+	 |  f:pro1 MOD g:pro2
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.MOD,(Instruccion)pro1,(Instruccion)pro2);:}
+	 |	g:pro1 {:RESULT = pro1;:}
 ;
 g::= F_NUMBER L_PARENT a R_PARENT
        | F_BIGINT L_PARENT a R_PARENT
        | F_BOOLEAN L_PARENT a R_PARENT
        | F_STRING  L_PARENT a R_PARENT
-       | h
+       | h:pro1 {:RESULT=pro1;:}
 ;
-h ::= MENOS i
-  | MAS i
-  | i
+h ::= MENOS i:pro1 {:RESULT =pro1;:}
+  | MAS i:pro1      {:RESULT= pro1;:}
+  | i:pro1   {:RESULT=pro1;:}
 ;
-i ::=  BIG_INT
-	|ENTERO
-    | NUM_DECIMAL 
-    | CADENA
-    | FALSE
-    | TRUE
-    | LITERAL
-    | L_PARENT a R_PARENT
+i ::=  BIG_INT:id {: RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.BIG_INT);:}
+	|ENTERO:id    {:RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.ENTERO); :}
+    | NUM_DECIMAL:id {:RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.NUM_DECIMAL); :}
+    | CADENA:id      {:RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.CADENA); :}
+    | FALSE:id       {:RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.BOOLEAN); :}
+    | TRUE:id        {:RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.BOOLEAN); :}
+    | LITERAL:id     {:RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.LITERAL); :}
+    | L_PARENT a:id R_PARENT {:RESULT= id; :}
 ;

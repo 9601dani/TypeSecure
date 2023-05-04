@@ -8,7 +8,5 @@ public class Main {
         System.out.println("Hello world!");
         EditorVIew editor= new EditorVIew();
         editor.setVisible(true);
-        int numero=10;
-        System.out.println(4+--numero);
     }
 }
