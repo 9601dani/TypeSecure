@@ -8,6 +8,7 @@ import com.danimo.ParserHandleSecure;
 import com.danimo.objects.NumeroLinea;
 import java.awt.Color;
 import javax.swing.JOptionPane;
+import static com.danimo.Main.errorForClient;
 
 /**
  *
@@ -123,6 +124,7 @@ public class EditorPanel extends javax.swing.JPanel {
 
     private void buttom_compilarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttom_compilarActionPerformed
         // TODO add your handling code here:
+        errorForClient.clear();
         System.out.println("Compillando "+ jTextArea1.getText());
         System.out.println("vamos a compilar");
         String texto= jTextArea1.getText();

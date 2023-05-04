@@ -3,6 +3,8 @@ import com.danimo.models.*;
 import com.danimo.objects.Token;
 import java.util.ArrayList;
 import java_cup.runtime.Symbol;
+import com.danimo.manageError.ObjectErr;
+
 class ParserSecure;
 parser code {:
         public ParserSecure(SecureLex lexer){
@@ -18,7 +20,7 @@ parser code {:
                       this.report_expected_token_ids();
                       System.out.println("Ignorando: " + symbol.value.toString());
                       Token token = (Token) symbol.value;
-                     // errors.add(new WorldError(token.getValue(),token.getLine(),token.getColumn(), ErrorType.LEXICO,"No existe esta cadena en el lenguaje"));
+                     errorForClient.add(new ObjectErr(token.getLexeme(),token.getLine(),token.getColumn(), "LEXICO","No existe esta cadena en el lenguaje"));
                       symbol = this.getScanner().next_token();
                   }
 
@@ -43,11 +45,11 @@ parser code {:
               if (cur_token.sym == ParserSecureSym.EOF) {
       //          String er = "Simbolo inesperado, se esperaba: "+ simbolosTerminales.obtenerSimbolos(expected_token_ids()).toString();
                   String er = "Simbolo inesperado";
-               //   errors.add(new WorldError("Fin del archivo", token.getLine(),token.getColumn(), ErrorType.SINTACTICO,er));
+                 errorForClient.add(new ObjectErr("Fin  archivo", token.getLine(),token.getColumn(), "SINTACTICO",er));
                   System.out.println(er);
               } else {
                   String er = "Simbolo inesperado";
-                  //errors.add(new WorldError(token.getValue(), token.getLine(), token.getColumn(),ErrorType.SINTACTICO,er));
+                  errorForClient.add(new ObjectErr(token.getLexeme(), token.getLine(), token.getColumn(),"SINTACTICO",er));
                   System.out.println(er);
               }
           }
@@ -56,13 +58,13 @@ parser code {:
               if (cur_token.sym == ParserSecureSym.EOF) {
                   Token tok = (Token) cur_token.value;
                   String er = "Error irrecuperable se llego al final del archivo";
-                //  errors.add(new WorldError("FIN ARCHIVO", tok.getLine(), tok.getColumn(), ErrorType.SINTACTICO, er));
+                  errorForClient.add(new ObjectErr("FIN ARCHIVO", tok.getLine(), tok.getColumn(), "SINTACTICO", er));
                   System.out.println(er);
               } else {
                   Token tok = (Token) cur_token.value;
                   //String er = "Error irrecuperable, un posible simbolo esperado: "+ simbolosTerminales.obtenerSimbolos(expected_token_ids()).toString();
                   String er = "Error irrecuperable resuelva el error anterior";
-               //   errors.add(new WorldError(tok.getValue(), tok.getLine(), tok.getColumn(), ErrorType.SINTACTICO, er));
+                  errorForClient.add(new ObjectErr(tok.getLexeme(), tok.getLine(), tok.getColumn(), "SINTACTICO", er));
                   System.out.println(er);
               }
           }
@@ -113,6 +115,7 @@ instrucciones ::=
 				       RESULT= new ArrayList<Instruccion>();
                        RESULT.add((Instruccion)b);
 				    :}
+				 |error
 ;
 
 instruccion ::=
