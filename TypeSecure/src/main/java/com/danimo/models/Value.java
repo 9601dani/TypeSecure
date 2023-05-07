@@ -19,26 +19,31 @@ public class Value extends Instruccion{
             case ENTERO -> {
                 variable.type= Variable.VariableType.NUMBER;
                 variable.value=(Double) this.value;
+                System.out.println("retorne un numbero");
                 return  variable;
             }
             case NUM_DECIMAL -> {
                 variable.type= Variable.VariableType.NUMBER;
                 variable.value= (int) this.value;
+                System.out.println("retorne un numbero");
                 return  variable;
             }
             case BIG_INT -> {
                 variable.type= Variable.VariableType.BIGINT;
                 variable.value= (BigInteger) this.value;
+                System.out.println("retorne un bigint");
                 return variable;
             }
             case CADENA -> {
                 variable.type= Variable.VariableType.STRING;
                 variable.value= (String) this.value;
+                System.out.println("retorne un string");
                 return variable;
             }
             case BOOLEAN -> {
                 variable.type= Variable.VariableType.BOOLEAN;
                 variable.value= (Boolean) this.value;
+                System.out.println("retorne un boolean");
                 return variable;
             }
             case LITERAL -> {

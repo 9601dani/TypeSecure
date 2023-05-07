@@ -12,6 +12,7 @@ public class IfState extends Instruccion{
         this.instruccion= instruccion;
         this.bloque_verdadero=bloque_verdadero;
         this.bloque_falso= bloque_falso;
+
     }
 
     public Instruccion getInstruccion() {

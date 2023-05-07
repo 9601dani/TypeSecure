@@ -26,4 +26,5 @@ public abstract class Instruccion {
         this.column = column;
     }
 
+
 }

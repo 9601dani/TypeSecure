@@ -65,11 +65,11 @@ SYM =   [@¨~$¡?·]+
       "BigInt"      { return token (F_BIGINT); }
       "Boolean"     { return token (F_BOOLEAN); }
       "String"      { return token (F_STRING); }
-      "lenght"      { return token (LENGHT); }
-      "charAt"      { return token (CHARAT); }
-      "toLowerCase" { return token(TO_LOWER_CASE); }
-      "toUpperCase" { return token(TO_UPPER_CASE); }
-      "concat"      { return token(CONCAT); }
+      ".length"      { return token (LENGTH); }
+      ".charAt"      { return token (CHARAT); }
+      ".toLowerCase()" { return token(TO_LOWER_CASE); }
+      ".toUpperCase()" { return token(TO_UPPER_CASE); }
+      ".concat"      { return token(CONCAT); }
       "if"          { return token(IF); }
       "else"        { return token(ELSE); }
       "for"         { return token(FOR); }
@@ -91,7 +91,7 @@ SYM =   [@¨~$¡?·]+
       "Math.floor"  { return token(MATH_FLOOR); }
       "Math.pow"    { return token(MATH_POW); }
       "Math.sqrt"   { return token(MATH_SQRT); }
-      "Math.random" { return token(MATH_RANDOM); }
+      "Math.random()" { return token(MATH_RANDOM); }
       "printAst"    { return token(PRINT_AST); }
       "getSymbolTable" { return token(GET_SYMBOL_TABLE); }
       {TRUE}           { return token(TRUE); }

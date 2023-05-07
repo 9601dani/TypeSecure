@@ -45,7 +45,7 @@ parser code {:
               if (cur_token.sym == ParserSecureSym.EOF) {
       //          String er = "Simbolo inesperado, se esperaba: "+ simbolosTerminales.obtenerSimbolos(expected_token_ids()).toString();
                   String er = "Simbolo inesperado";
-                 errorForClient.add(new ObjectErr("Fin  archivo", token.getLine(),token.getColumn(), "SINTACTICO",er));
+                 errorForClient.add(new ObjectErr("Se llego al final del archivo sin poder recuperar el error", token.getLine(),token.getColumn(), "SINTACTICO",er));
                   System.out.println(er);
               } else {
                   String er = "Simbolo inesperado";
@@ -58,7 +58,7 @@ parser code {:
               if (cur_token.sym == ParserSecureSym.EOF) {
                   Token tok = (Token) cur_token.value;
                   String er = "Error irrecuperable se llego al final del archivo";
-                  errorForClient.add(new ObjectErr("FIN ARCHIVO", tok.getLine(), tok.getColumn(), "SINTACTICO", er));
+                  errorForClient.add(new ObjectErr("Se llego al final del archivo sin poder recuperar el error", tok.getLine(), tok.getColumn(), "SINTACTICO", er));
                   System.out.println(er);
               } else {
                   Token tok = (Token) cur_token.value;
@@ -77,6 +77,34 @@ parser code {:
                 }
                 return null;
           }
+          public Cast.CastType returnTypeCast(String data){
+                if(data.equalsIgnoreCase("NUMBER")){
+                    return Cast.CastType.NUMBER;
+                }else if(data.equalsIgnoreCase("BIGINT")){
+                    return Cast.CastType.BIGINT;
+                }else if(data.equalsIgnoreCase("BOOLEAN")){
+                    return Cast.CastType.BOOLEAN;
+                }else if(data.equalsIgnoreCase("STRING")){
+                    return Cast.CastType.STRING;
+                }
+                return null;
+          }
+          public MethodString.MethodType returnTypeMethodString(String data){
+          System.out.println("enviado: "+ data);
+                if(data.equalsIgnoreCase(".TOLOWERCASE()")){
+                    return MethodString.MethodType.LOWERCASE;
+                }else if(data.equalsIgnoreCase(".TOUPPERCASE()")){
+                    return MethodString.MethodType.UPPERCASE;
+                }else if(data.equalsIgnoreCase(".CONCAT")){
+                    return MethodString.MethodType.CONCAT;
+                }else if(data.equalsIgnoreCase(".LENGTH")){
+                    return MethodString.MethodType.LENGTH;
+                }else if(data.equalsIgnoreCase(".CHARAT")){
+                    return MethodString.MethodType.CHARAT;
+                }
+                return null;
+          }
+
 
 :}
 /*terminales para declare*/
@@ -84,11 +112,11 @@ terminal Token PUNTO_COMA,COMA,DOS_PUNTOS,IGUAL,CONST,LET;
 /*operaciones*/
 terminal Token OR,AND,NOT,DISTINTO_QUE,MENOR_QUE,MENOR_IGUAL_QUE,MAYOR_QUE,MAYOR_IGUAL_QUE,DOBLE_IGUAL
           ,MAS, MENOS,MULTIPLY,DIVIDE,BIG_INT,ENTERO,NUM_DECIMAL,CADENA,FALSE,TRUE,LITERAL,L_PARENT,R_PARENT;
-terminal Token T_NUMBER,T_BIGINT,T_STRING,T_BOOLEAN,T_VOID,T_UNDEFINED,CONSOLE,F_NUMBER,F_BIGINT,F_BOOLEAN,F_STRING,LENGHT,
+terminal Token T_NUMBER,T_BIGINT,T_STRING,T_BOOLEAN,T_VOID,T_UNDEFINED,CONSOLE,F_NUMBER,F_BIGINT,F_BOOLEAN,F_STRING,LENGTH,
 CHARAT,TO_LOWER_CASE,TO_UPPER_CASE,CONCAT,IF,ELSE,FOR,WHILE,DO,BREAK,CONTINUE,FUNCTION,RETURN,MATH_E,MATH_PI,MATH_SQRT2,
 MATH_ABS,MATH_CEIL,MATH_COS,MATH_SIN,MATH_TAN,MATH_EXP,MATH_FLOOR,MATH_POW,MATH_SQRT,MATH_RANDOM,PRINT_AST,GET_SYMBOL_TABLE,
 SYM,ERROR,MOD,MAS_MAS,MENOS_MENOS, L_LLAVE, R_LLAVE;
-nonterminal instruccion,type,type_f,settear,a,
+nonterminal instruccion,type,type_f,settear,a,method_string,method_math,type_method_string,
             b,c,d,e,f,g,h,i,if_pro,while_pro,console_pro,else_pro,for_pro
             , do_while_pro,sumadores_pro,assignacion_pro,funtion_pro, parametros, call_funtion;
 nonterminal Ast inic;
@@ -251,6 +279,7 @@ sumadores_pro::=
 {::}
 ;
 
+
 a ::= a:pro1 OR b:pro2
 {:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.OR,(Instruccion)pro1,(Instruccion)pro2);:}
 	| b:pro1
@@ -297,12 +326,43 @@ f ::=  	f:pro1 MULTIPLY g:pro2
 {:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.MOD,(Instruccion)pro1,(Instruccion)pro2);:}
 	 |	g:pro1 {:RESULT = pro1;:}
 ;
-g::= F_NUMBER L_PARENT a R_PARENT
-       | F_BIGINT L_PARENT a R_PARENT
-       | F_BOOLEAN L_PARENT a R_PARENT
-       | F_STRING  L_PARENT a R_PARENT
-       | h:pro1 {:RESULT=pro1;:}
+g::= F_NUMBER:pro1 L_PARENT a:pro2 R_PARENT {:RESULT= new Cast(((Token)pro1).getLine(),((Token) pro1).getColumn(),returnTypeCast(((Token)pro1).getLexeme()),((Instruccion)pro2));:}
+       | F_BIGINT:pro1 L_PARENT a:pro2 R_PARENT {:RESULT= new Cast(((Token)pro1).getLine(),((Token) pro1).getColumn(),returnTypeCast(((Token)pro1).getLexeme()),((Instruccion)pro2));:}
+       | F_BOOLEAN:pro1 L_PARENT a:pro2 R_PARENT {:RESULT= new Cast(((Token)pro1).getLine(),((Token) pro1).getColumn(),returnTypeCast(((Token)pro1).getLexeme()),((Instruccion)pro2));:}
+       | F_STRING:pro1  L_PARENT a:pro2 R_PARENT {:RESULT= new Cast(((Token)pro1).getLine(),((Token) pro1).getColumn(),returnTypeCast(((Token)pro1).getLexeme()),((Instruccion)pro2));:}
+       | method_math:pro1 {:RESULT=pro1;:}
 ;
+method_math ::=
+                MATH_E:prod {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.E,null,null);:}
+              | MATH_PI:prod {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.PI,null,null);:}
+              | MATH_SQRT2:prod {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.SQRT2,null,null);:}
+              | MATH_ABS:prod h:prod2 {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.ABS,(Instruccion)prod2,null);:}
+              | MATH_CEIL:prod h:prod2 {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.CEIL,(Instruccion)prod2,null);:}
+              | MATH_COS:prod h:prod2 {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.COS,(Instruccion)prod2,null);:}
+              | MATH_SIN:prod h:prod2 {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.SIN,(Instruccion)prod2,null);:}
+              | MATH_TAN:prod h:prod2 {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.TAN,(Instruccion)prod2,null);:}
+              | MATH_EXP:prod h:prod2 {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.EXP,(Instruccion)prod2,null);:}
+              | MATH_FLOOR:prod h:prod2 {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.FLOOR,(Instruccion)prod2,null);:}
+              | MATH_POW:prod L_PARENT a:prod2 COMA a:prod3 R_PARENT {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.POW,(Instruccion)prod2,(Instruccion)prod3);:}
+              | MATH_SQRT:prod L_PARENT a:prod2 COMA a:prod3 R_PARENT {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.SQRT,(Instruccion)prod2,null);:}
+              | MATH_SQRT:prod  {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.SQRT,null,null);:}
+              | method_string:prod1 {:RESULT = prod1;:}
+;
+method_string ::=
+                h:id type_method_string:prod2 {:RESULT = new MethodString(((Value)id).getLine(), ((Value)id).getColumn(),((Value)id).value.toString(),returnTypeMethodString(((Token)prod2).getLexeme()),null);:}
+             // | h:id CHARAT L_PARENT a:prod R_PARENT   {:RESULT = new MethodString(((Token)id).getLine(), ((Token)id).getColumn(),((Token)id).getLexeme(), MethodString.MethodType.CHARAT,(Instruccion)prod);:}
+             // | h:id CONCAT L_PARENT a:prod R_PARENT a   {:RESULT = new MethodString(((Token)id).getLine(), ((Token)id).getColumn(),((Token)id).getLexeme(), MethodString.MethodType.CONCAT,(Instruccion)prod);:}
+              // produccion si viene mas de un concat
+              |h:prod1 {:RESULT = prod1;:}
+;
+type_method_string ::=
+                    TO_LOWER_CASE:prod {:RESULT=((Token)prod);:}
+                 |  TO_UPPER_CASE:prod {:RESULT=((Token)prod);:}
+                 |  LENGTH :prod        {:RESULT=((Token)prod);:}
+                 |  CHARAT :prod        {:RESULT=((Token)prod);:}
+                 |  CONCAT  :prod       {:RESULT=((Token)prod);:}
+;
+
 h ::= MENOS i:pro1 {:RESULT =pro1;:}
   | MAS i:pro1      {:RESULT= pro1;:}
   | i:pro1   {:RESULT=pro1;:}
