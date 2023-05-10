@@ -1,5 +1,7 @@
 package com.danimo.models;
 
+import com.danimo.visitor.Visitor;
+
 public class OperacionBinaria extends Instruccion {
     public OperationType type;
     public Instruccion operador_izquierdo;
@@ -50,6 +52,11 @@ public class OperacionBinaria extends Instruccion {
     @Override
     Object run(TablaSimbolos table) {
         return null;
+    }
+
+    @Override
+    public Variable accept(Visitor v) {
+        return  v.visit(this);
     }
 
 }

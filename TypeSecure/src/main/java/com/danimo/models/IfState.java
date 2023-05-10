@@ -1,5 +1,7 @@
 package com.danimo.models;
 
+import com.danimo.visitor.Visitor;
+
 import java.util.ArrayList;
 
 public class IfState extends Instruccion{
@@ -53,5 +55,11 @@ public class IfState extends Instruccion{
     @Override
     Object run(TablaSimbolos table) {
         return null;
+    }
+
+    @Override
+    public Instruccion accept(Visitor v) {
+        return v.visit(this);
+
     }
 }

@@ -1,5 +1,7 @@
 package com.danimo.models;
 
+import com.danimo.visitor.Visitor;
+
 import java.math.BigInteger;
 
 public class Value extends Instruccion{
@@ -58,6 +60,12 @@ public class Value extends Instruccion{
         }
         return null;
     }
+
+    @Override
+    public Variable accept(Visitor v) {
+        return  v.visit(this);
+    }
+
     public enum ValueType{
         BIG_INT,
         ENTERO,
@@ -87,12 +95,7 @@ public class Value extends Instruccion{
 
     @Override
     public String toString() {
-        return "\nValue{" +
-                "value=" + value +
-                ", type=" + type +
-                ", line=" + line +
-                ", column=" + column +
-                '}';
+        return "\n"+value;
     }
 }
 

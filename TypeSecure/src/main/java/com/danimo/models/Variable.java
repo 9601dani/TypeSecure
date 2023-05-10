@@ -53,6 +53,16 @@ public class Variable {
         LET,
         CONST
     }
+
+    @Override
+    public String toString() {
+        return "\nVariable{" +
+                "id='" + id + '\'' +
+                ", type=" + type +
+                ", value=" + value +
+                ", type_modi=" + type_modi +
+                '}';
+    }
 }
 
 

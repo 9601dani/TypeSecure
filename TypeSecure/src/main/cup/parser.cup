@@ -9,6 +9,7 @@ class ParserSecure;
 parser code {:
         public ParserSecure(SecureLex lexer){
             super(lexer);
+             private static ArrayList<ObjectErr> errorForClient=TypeSecureError.getTypeErrorSingleton().errores;
         }
        public Symbol scan() throws Exception {
                   Symbol symbol = this.getScanner().next_token();
@@ -116,11 +117,12 @@ terminal Token T_NUMBER,T_BIGINT,T_STRING,T_BOOLEAN,T_VOID,T_UNDEFINED,CONSOLE,F
 CHARAT,TO_LOWER_CASE,TO_UPPER_CASE,CONCAT,IF,ELSE,FOR,WHILE,DO,BREAK,CONTINUE,FUNCTION,RETURN,MATH_E,MATH_PI,MATH_SQRT2,
 MATH_ABS,MATH_CEIL,MATH_COS,MATH_SIN,MATH_TAN,MATH_EXP,MATH_FLOOR,MATH_POW,MATH_SQRT,MATH_RANDOM,PRINT_AST,GET_SYMBOL_TABLE,
 SYM,ERROR,MOD,MAS_MAS,MENOS_MENOS, L_LLAVE, R_LLAVE;
-nonterminal instruccion,type,type_f,settear,a,method_string,method_math,type_method_string,
+nonterminal instruccion,type,type_f,settear,a,method_string,method_math,type_method_string,parame,
             b,c,d,e,f,g,h,i,if_pro,while_pro,console_pro,else_pro,for_pro
-            , do_while_pro,sumadores_pro,assignacion_pro,funtion_pro, parametros, call_funtion;
+            , do_while_pro,sumadores_pro,assignacion_pro,assig_pro,funtion_pro, call_funtion;
 nonterminal Ast inic;
 nonterminal  Declare declare_pro;
+nonterminal ArrayList<Parametro> parametros;
 nonterminal ArrayList<Instruccion> instrucciones, declare,expr;
 start with inic;
 
@@ -148,7 +150,6 @@ instrucciones ::=
 
 instruccion ::=
                     declare_pro:pro PUNTO_COMA {:RESULT = pro; :}
-                |   assignacion_pro:assign PUNTO_COMA {:RESULT = assign;:}
                 |   console_pro:pro {:RESULT = pro;:}
 				|   settear:pro {:RESULT = pro;:}
 				|   if_pro:pro  {:RESULT = pro;:}
@@ -158,6 +159,7 @@ instruccion ::=
 				|   sumadores_pro:pro PUNTO_COMA    {:RESULT = pro;:}
 				|   funtion_pro:pro {:RESULT = pro;:}
 				|   call_funtion:pro PUNTO_COMA     {:RESULT = pro;:}
+				|   assig_pro:pro PUNTO_COMA {:RESULT= pro;:}
 ;
 
 declare_pro ::=
@@ -184,13 +186,29 @@ assignacion_pro ::=
                 /*RESULT = new Assingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),(Variable.VariableType)type, (Instruccion) instruccion);*/
                                 RESULT = new Assingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),(Variable.VariableType)type, (Instruccion) pro1);
                 :}
-			| 	LITERAL:id DOS_PUNTOS type
+			| 	LITERAL:id DOS_PUNTOS type:type
 			    {:
-                RESULT = new Assingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),Variable.VariableType.UNDEFINED,null);
+                RESULT = new Assingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),(Variable.VariableType)type,null);
 			    :}
 			|   LITERAL:id IGUAL a:pro1
 			    {:
                 RESULT = new Assingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),Variable.VariableType.DEFINIRLA, (Instruccion) pro1);
+			    :}
+			|   LITERAL:id IGUAL call_funtion
+;
+assig_pro ::=
+                LITERAL:id DOS_PUNTOS type:type IGUAL a:pro1
+                {:
+                /*RESULT = new Assingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),(Variable.VariableType)type, (Instruccion) instruccion);*/
+                                RESULT = new OnlyAssingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),(Variable.VariableType)type, (Instruccion) pro1);
+                :}
+			| 	LITERAL:id DOS_PUNTOS type:type
+			    {:
+                RESULT = new OnlyAssingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),(Variable.VariableType)type,null);
+			    :}
+			|   LITERAL:id IGUAL a:pro1
+			    {:
+                RESULT = new OnlyAssingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),Variable.VariableType.DEFINIRLA, (Instruccion) pro1);
 			    :}
 			|   LITERAL:id IGUAL call_funtion
 ;
@@ -259,14 +277,26 @@ do_while_pro::=
 {:RESULT=new DoWhile(prod.getLine(), prod.getColumn(),(Instruccion)prod3, null );:}
 ;
 funtion_pro ::=
-                FUNCTION LITERAL L_PARENT  R_PARENT DOS_PUNTOS type L_LLAVE instrucciones R_LLAVE
-             |  FUNCTION LITERAL L_PARENT parametros R_PARENT DOS_PUNTOS type L_LLAVE instrucciones R_LLAVE
-             |  FUNCTION LITERAL L_PARENT  R_PARENT  L_LLAVE instrucciones R_LLAVE
-             |  FUNCTION LITERAL L_PARENT parametros R_PARENT  L_LLAVE instrucciones R_LLAVE
+               FUNCTION:prod LITERAL:id L_PARENT parametros:param R_PARENT DOS_PUNTOS type:pro_tipo L_LLAVE instrucciones:prod1 R_LLAVE
+{:RESULT= new Function(((Token)prod).getLine(), ((Token)prod).getColumn(),((Token)id).getLexeme(),(ArrayList<Parametro>)param,(ArrayList<Instruccion>)prod1, (Variable.VariableType)pro_tipo);:}
+               |  FUNCTION:prod LITERAL:id L_PARENT parametros:param R_PARENT  L_LLAVE instrucciones:prod1 R_LLAVE
+{:RESULT= new Function(((Token)prod).getLine(), ((Token)prod).getColumn(),((Token)id).getLexeme(),(ArrayList<Parametro>)param,(ArrayList<Instruccion>)prod1, Variable.VariableType.VOID);:}
 ;
 parametros ::=
-              parametros COMA assignacion_pro
-              | assignacion_pro
+              parametros:prod COMA parame:prod1
+               {:
+                     ((ArrayList<Parametro>)prod).add((Parametro)prod1);
+                     RESULT= prod;
+               :}
+              | parame:prod
+              {:
+                    RESULT= new ArrayList<Parametro>();
+                    RESULT.add((Parametro)prod);
+              :}
+;
+parame ::=
+             LITERAL:id DOS_PUNTOS type:pro {: RESULT= new Parametro(((Token)id).getLine(), ((Token)id).getColumn(), ((Token)id).getLexeme(), (Variable.VariableType)pro);:}
+            |
 ;
 call_funtion::=
                 LITERAL L_PARENT assignacion_pro R_PARENT
@@ -345,22 +375,20 @@ method_math ::=
               | MATH_FLOOR:prod h:prod2 {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.FLOOR,(Instruccion)prod2,null);:}
               | MATH_POW:prod L_PARENT a:prod2 COMA a:prod3 R_PARENT {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.POW,(Instruccion)prod2,(Instruccion)prod3);:}
               | MATH_SQRT:prod L_PARENT a:prod2 COMA a:prod3 R_PARENT {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.SQRT,(Instruccion)prod2,null);:}
-              | MATH_SQRT:prod  {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.SQRT,null,null);:}
+              | MATH_RANDOM:prod  {:RESULT= new MethodMath(((Token)prod).getLine(), ((Token)prod).getColumn(),MethodMath.TypeMath.RANDOM,null,null);:}
               | method_string:prod1 {:RESULT = prod1;:}
 ;
 method_string ::=
                 h:id type_method_string:prod2 {:RESULT = new MethodString(((Value)id).getLine(), ((Value)id).getColumn(),((Value)id).value.toString(),returnTypeMethodString(((Token)prod2).getLexeme()),null);:}
-             // | h:id CHARAT L_PARENT a:prod R_PARENT   {:RESULT = new MethodString(((Token)id).getLine(), ((Token)id).getColumn(),((Token)id).getLexeme(), MethodString.MethodType.CHARAT,(Instruccion)prod);:}
-             // | h:id CONCAT L_PARENT a:prod R_PARENT a   {:RESULT = new MethodString(((Token)id).getLine(), ((Token)id).getColumn(),((Token)id).getLexeme(), MethodString.MethodType.CONCAT,(Instruccion)prod);:}
+                | h:id CHARAT L_PARENT a:prod R_PARENT   {:RESULT = new MethodString(((Value)id).getLine(), ((Value)id).getColumn(),((Value)id).value.toString(), MethodString.MethodType.CHARAT,(Instruccion)prod);:}
+                | h:id CONCAT L_PARENT a:prod R_PARENT   {:RESULT = new MethodString(((Value)id).getLine(), ((Value)id).getColumn(),((Value)id).value.toString(), MethodString.MethodType.CONCAT,(Instruccion)prod);:}
               // produccion si viene mas de un concat
-              |h:prod1 {:RESULT = prod1;:}
+                |h:prod1 {:RESULT = prod1;:}
 ;
 type_method_string ::=
                     TO_LOWER_CASE:prod {:RESULT=((Token)prod);:}
                  |  TO_UPPER_CASE:prod {:RESULT=((Token)prod);:}
                  |  LENGTH :prod        {:RESULT=((Token)prod);:}
-                 |  CHARAT :prod        {:RESULT=((Token)prod);:}
-                 |  CONCAT  :prod       {:RESULT=((Token)prod);:}
 ;
 
 h ::= MENOS i:pro1 {:RESULT =pro1;:}

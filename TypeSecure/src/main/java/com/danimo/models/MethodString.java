@@ -1,5 +1,7 @@
 package com.danimo.models;
 
+import com.danimo.visitor.Visitor;
+
 public class MethodString extends Instruccion {
     public String id;
     public MethodType type;
@@ -15,6 +17,11 @@ public class MethodString extends Instruccion {
     @Override
     Object run(TablaSimbolos table) {
         return null;
+    }
+
+    @Override
+    public Variable accept(Visitor v) {
+        return  v.visit(this);
     }
 
     public Instruccion getOperador_derecho() {

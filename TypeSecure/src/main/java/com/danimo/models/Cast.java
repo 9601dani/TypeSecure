@@ -1,5 +1,7 @@
 package com.danimo.models;
 
+import com.danimo.visitor.Visitor;
+
 public class Cast extends Instruccion {
     public CastType tipoCast;
     public Instruccion id;
@@ -13,6 +15,11 @@ public class Cast extends Instruccion {
     @Override
     Object run(TablaSimbolos table) {
         return null;
+    }
+
+    @Override
+    public Variable accept(Visitor v) {
+        return v.visit(this);
     }
 
     public CastType getTipoCast() {

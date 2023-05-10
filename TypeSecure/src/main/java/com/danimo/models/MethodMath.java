@@ -1,5 +1,7 @@
 package com.danimo.models;
 
+import com.danimo.visitor.Visitor;
+
 public class MethodMath extends Instruccion {
     public TypeMath type;
     public Instruccion operador_derecho;
@@ -16,6 +18,12 @@ public class MethodMath extends Instruccion {
     Object run(TablaSimbolos table) {
         return null;
     }
+
+    @Override
+    public Variable accept(Visitor v) {
+        return  v.visit(this);
+    }
+
     public TypeMath getType() {
         return this.type;
     }

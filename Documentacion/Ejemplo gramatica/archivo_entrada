@@ -1,0 +1,68 @@
+//este es un archivo de entrada
+
+//declaracion
+let score1: number = 20, lastname: string = 'Perez Leon';
+let fullname = 'Jose Perez';
+const SUMA = 1000;
+const message2 = "El resultado es: " + greeting == 'Hello world';
+const n1 = 10n;
+const n2 = 10;
+//console
+console.log(message2); // El resultado es: true
+//uno if con casteos
+if (Number(fullname) == 1 && String (n1) == String(n2)) {// true
+    //instrucciones
+}
+
+if (Number(" -12.23 ") == -12.23) {// true
+    console.log('it works again');
+}
+const n1 = s1.length;
+console.log(s1.toLowerCase());
+// My name is Jose Perez
+console.log("My name is:", fullname);
+if (true) {
+	console.log('Esto siempre se ejecutará');
+}
+
+if (false) {
+	const a: number = 10, b: bigint = 12n;
+	if (a < b) {
+		console.log('a < b');
+	}
+	console.log('esto nunca se ejecutara');
+}
+//for
+for (let i = 0; i < 3; i++) {
+  console.log ("Block statement execution no." + i);
+}
+//while
+let num : number = 5; 
+let factorial : number = 1; 
+
+while(num >= 1) { 
+   factorial = factorial * num; 
+   num--; 
+}
+//do while
+let i: number = 2;
+do {
+    console.log("Block statement execution no." + i );
+    i++;
+} while ( i < 4);
+//funtion
+function sayHello(): void {
+	console.log('Hello there!');
+}
+
+function sayHello2(name: string): void {
+	const greeting = 'Hello ' + name + '!';
+	console.log(greeting);
+}
+//funciones math
+const area = (rad / 2) * Math.pow(radius, 2);
+
+// El area es 39n
+console.log("El area es:", BigInt(Math.floor(area)));
+
+

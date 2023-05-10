@@ -1,5 +1,7 @@
 package com.danimo.models;
 
+import com.danimo.visitor.Visitor;
+
 import java.util.ArrayList;
 
 public class Declare  extends  Instruccion{
@@ -14,6 +16,12 @@ public class Declare  extends  Instruccion{
 
     @Override
     Object run(TablaSimbolos table) {
+        return null;
+    }
+
+    @Override
+    public Object accept(Visitor v) {
+          v.visit(this);
         return null;
     }
 

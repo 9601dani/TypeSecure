@@ -1,5 +1,5 @@
 // declaración de variables
-const TOTAL: number = 100;
+const TOTAL: number = 100+2;
 let name: string = 'Jonh';
 let score1: number = 20, lastname: string = 'Perez Leon';
 let _flag: boolean = score1 > TOTAL && FALSE || true;
@@ -24,6 +24,15 @@ console.log(BigInt(true && false)); // 0n
 if (true) {
 	console.log('Esto siempre se ejecutará');
 }
+if (x > y) {
+	z++;
+	console.log('El mayor es: ' + x);
+} else if (x < y) {
+	z--;
+	console.log('El mayor es: ' + y);
+} else {
+	console.log('Los numeros son iguales');
+}
 
 if (false) {
 	const a: number = 10, b: bigint = 12n;
@@ -36,15 +45,6 @@ if (false) {
 
 const x = 10, y = 20;
 let z = 100;
-if (x > y) {
-	z++;
-	console.log('El mayor es: ' + x);
-} else if (x < y) {
-	z--;
-	console.log('El mayor es: ' + y);
-} else {
-	console.log('Los numeros son iguales');
-}
 
 while(condition) { 
    // statements if the condition is true 
@@ -97,3 +97,15 @@ for (let i = 0, j = 10; i < j && j > 5; i++) {
 if(a > 10 && !false || !true){
 	let c : number = Number(String(BigInt("-15")));
 }
+function caller() { 
+   const msg = greet(); //function greet() invoked 
+   console.log(msg); 
+} 
+caller();
+function test() {   // function definition    
+   console.log("function called"); 
+} 
+
+
+test(); 
+

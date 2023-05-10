@@ -2,17 +2,16 @@ package com.danimo.models;
 
 import com.danimo.visitor.Visitor;
 
-public class Assingment extends Instruccion {
+public class OnlyAssingment extends Instruccion {
     public String id;
     public Variable.VariableType type;
     public Instruccion value;
 
-
-    public Assingment(int line, int column, String id, Variable.VariableType type, Instruccion value){
-        super(line,column);
-        this.id= id;
-        this.type= type;
-        this.value= value;
+    public OnlyAssingment(final int line, final int column, final String id, final Variable.VariableType type, final Instruccion value) {
+        super(line, column);
+        this.id = id;
+        this.type = type;
+        this.value = value;
     }
 
     @Override
@@ -22,25 +21,17 @@ public class Assingment extends Instruccion {
 
     @Override
     public Variable accept(Visitor v) {
-        return  v.visit(this);
+        return v.visit(this);
     }
 
     @Override
     public String toString() {
-        return "\nAssingment{" +
+        return "\nOnlyAssingment{" +
                 "id='" + id + '\'' +
                 ", type=" + type +
                 ", value=" + value +
                 ", line=" + line +
                 ", column=" + column +
                 '}';
-    }
-
-    public String getId() {
-        return this.id;
-    }
-
-    public void setId(final String id) {
-        this.id = id;
     }
 }

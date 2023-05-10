@@ -5,16 +5,20 @@
 package com.danimo.frames;
 
 import com.danimo.ParserHandleSecure;
+import com.danimo.manageError.ObjectErr;
+import com.danimo.manageError.TypeSecureError;
 import com.danimo.objects.NumeroLinea;
 import java.awt.Color;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
-import static com.danimo.Main.errorForClient;
+
 
 /**
  *
  * @author danimo
  */
 public class EditorPanel extends javax.swing.JPanel {
+    private static ArrayList<ObjectErr> errorForClient= TypeSecureError.getTypeErrorSingleton().errores;
     NumeroLinea numeroLinea;
     public String currentFilePath;
     /**
@@ -125,6 +129,7 @@ public class EditorPanel extends javax.swing.JPanel {
     private void buttom_compilarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttom_compilarActionPerformed
         // TODO add your handling code here:
         errorForClient.clear();
+        jTextArea2.setText("");
         System.out.println("Compillando "+ jTextArea1.getText());
         System.out.println("vamos a compilar");
         String texto= jTextArea1.getText();
@@ -147,7 +152,7 @@ public class EditorPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextArea jTextArea2;
+    public static javax.swing.JTextArea jTextArea2;
     public javax.swing.JLabel line;
     // End of variables declaration//GEN-END:variables
 }
