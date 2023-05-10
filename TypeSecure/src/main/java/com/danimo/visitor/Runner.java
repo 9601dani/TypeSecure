@@ -48,7 +48,7 @@ public class Runner extends Visitor{
                         return null;
                     }
             }else{
-                errorForClient.add(new ObjectErr(value.id,i.getLine(), i.getColumn(), "SEMANTICO","NO EXISTE UN VALOR PARA ESTO"));
+                errorForClient.add(new ObjectErr(value.id,i.getLine(), i.getColumn(), "SEMANTICO","No existe un valor para esto"));
                 return null;
             }
         }
@@ -56,8 +56,26 @@ public class Runner extends Visitor{
 
     @Override
     public Variable visit(OnlyAssingment i) {
-        System.out.println("ESTA ES UNA ASIGNACION");
-        return null;
+        Variable variable=this.table.getWithId(i.id);
+        Variable tmp= new Variable();
+        if(variable!=null){
+            if(!variable.type_modi.equals(Variable.TypeV.CONST)){
+                tmp=(Variable) i.value.accept(this);
+                if(variable.type.equals(tmp.type)){
+                    variable.setValue(tmp.getValue());
+                    return  variable;
+                }else{
+                    errorForClient.add(new ObjectErr(variable.id,i.getLine(), i.getColumn(), "SEMANTICO","Variable tipo: "+variable.type+" y dato nuevo es: "+ tmp.type));
+                    return null;
+                }
+            }else{
+                errorForClient.add(new ObjectErr(variable.id,i.getLine(), i.getColumn(), "SEMANTICO","La variable es de tipo CONST, no puedes modificarla"));
+                return null;
+            }
+        }else{
+            errorForClient.add(new ObjectErr(variable.id,i.getLine(), i.getColumn(), "SEMANTICO","No existe la variable"));
+            return null;
+        }
     }
 
 

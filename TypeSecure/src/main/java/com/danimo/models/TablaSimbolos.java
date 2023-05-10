@@ -21,12 +21,13 @@ public class TablaSimbolos extends ArrayList<Variable> {
                 return variable;
             }
         }
-        for (Variable variable : this.parent) {
-            if (variable.getId().equals(id)) {
-                return variable;
+        if(!parent.isEmpty()){
+            for (Variable variable : this.parent) {
+                if (variable.getId().equals(id)) {
+                    return variable;
+                }
             }
         }
-
         return null;
     }
 

@@ -197,15 +197,6 @@ assignacion_pro ::=
 			|   LITERAL:id IGUAL call_funtion
 ;
 assig_pro ::=
-                LITERAL:id DOS_PUNTOS type:type IGUAL a:pro1
-                {:
-                /*RESULT = new Assingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),(Variable.VariableType)type, (Instruccion) instruccion);*/
-                                RESULT = new OnlyAssingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),(Variable.VariableType)type, (Instruccion) pro1);
-                :}
-			| 	LITERAL:id DOS_PUNTOS type:type
-			    {:
-                RESULT = new OnlyAssingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),(Variable.VariableType)type,null);
-			    :}
 			|   LITERAL:id IGUAL a:pro1
 			    {:
                 RESULT = new OnlyAssingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),Variable.VariableType.DEFINIRLA, (Instruccion) pro1);
