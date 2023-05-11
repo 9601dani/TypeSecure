@@ -5,8 +5,8 @@ import com.danimo.visitor.Visitor;
 import java.math.BigInteger;
 
 public class Value extends Instruccion{
-    public Object value;
-    public  ValueType type;
+    private Object value;
+    private  ValueType type;
 
     public Value(int line,int column, Object value, ValueType type) {
         super(line, column);
@@ -19,32 +19,32 @@ public class Value extends Instruccion{
         Variable variable = new Variable();
         switch (this.type){
             case ENTERO -> {
-                variable.type= Variable.VariableType.NUMBER;
-                variable.value=(Double) this.value;
+                variable.setType(Variable.VariableType.NUMBER);
+                variable.setValue(Integer.parseInt((String)this.getValue()));
                 System.out.println("retorne un numbero");
                 return  variable;
             }
             case NUM_DECIMAL -> {
-                variable.type= Variable.VariableType.NUMBER;
-                variable.value= (int) this.value;
+                variable.setType(Variable.VariableType.NUMBER);
+                variable.setValue(Double.valueOf((String)this.getValue()));
                 System.out.println("retorne un numbero");
                 return  variable;
             }
             case BIG_INT -> {
-                variable.type= Variable.VariableType.BIGINT;
-                variable.value= (BigInteger) this.value;
+                variable.setType(Variable.VariableType.BIGINT);
+                variable.setValue((String) this.getValue());
                 System.out.println("retorne un bigint");
                 return variable;
             }
             case CADENA -> {
-                variable.type= Variable.VariableType.STRING;
-                variable.value= (String) this.value;
+                variable.setType(Variable.VariableType.STRING);
+                variable.setValue((String) this.getValue());
                 System.out.println("retorne un string");
                 return variable;
             }
             case BOOLEAN -> {
-                variable.type= Variable.VariableType.BOOLEAN;
-                variable.value= (Boolean) this.value;
+                variable.setType(Variable.VariableType.BOOLEAN);
+                variable.setValue((Boolean) this.getValue());
                 System.out.println("retorne un boolean");
                 return variable;
             }

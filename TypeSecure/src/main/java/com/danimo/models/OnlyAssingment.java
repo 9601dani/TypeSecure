@@ -3,9 +3,9 @@ package com.danimo.models;
 import com.danimo.visitor.Visitor;
 
 public class OnlyAssingment extends Instruccion {
-    public String id;
-    public Variable.VariableType type;
-    public Instruccion value;
+    private String id;
+    private Variable.VariableType type;
+    private Instruccion value;
 
     public OnlyAssingment(final int line, final int column, final String id, final Variable.VariableType type, final Instruccion value) {
         super(line, column);
@@ -33,5 +33,29 @@ public class OnlyAssingment extends Instruccion {
                 ", line=" + line +
                 ", column=" + column +
                 '}';
+    }
+
+    public String getId() {
+        return this.id;
+    }
+
+    public void setId(final String id) {
+        this.id = id;
+    }
+
+    public Variable.VariableType getType() {
+        return this.type;
+    }
+
+    public void setType(final Variable.VariableType type) {
+        this.type = type;
+    }
+
+    public Instruccion getValue() {
+        return this.value;
+    }
+
+    public void setValue(final Instruccion value) {
+        this.value = value;
     }
 }

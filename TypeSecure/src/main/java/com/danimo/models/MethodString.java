@@ -3,9 +3,9 @@ package com.danimo.models;
 import com.danimo.visitor.Visitor;
 
 public class MethodString extends Instruccion {
-    public String id;
-    public MethodType type;
-    public Instruccion operador_derecho;
+    private String id;
+    private MethodType type;
+    private Instruccion operador_derecho;
 
     public MethodString(final int line, final int column, final String id, final MethodType type, final Instruccion operador_derecho) {
         super(line, column);

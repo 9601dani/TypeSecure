@@ -4,7 +4,6 @@ public enum OperationType {
         OR,
         AND,
         NOT,
-        NO_IGUAL,
         MENOR_QUE,
         MENOR_IGUAL_QUE,
         MAYOR_QUE,

@@ -3,9 +3,9 @@ package com.danimo.models;
 import com.danimo.visitor.Visitor;
 
 public class OperacionBinaria extends Instruccion {
-    public OperationType type;
-    public Instruccion operador_izquierdo;
-    public Instruccion operador_derecho;
+    private OperationType type;
+    private Instruccion operador_izquierdo;
+    private Instruccion operador_derecho;
 
     public OperacionBinaria(final int line, final int column, final OperationType type, final Instruccion operador_izquierdo, final Instruccion operador_derecho) {
         super(line, column);

@@ -5,7 +5,7 @@ import com.danimo.visitor.Visitor;
 import java.util.ArrayList;
 
 public class ConsoleLog  extends Instruccion{
-    public ArrayList<Instruccion> instruccions;
+    private ArrayList<Instruccion> instruccions;
 
     public ConsoleLog(final int line, final int column, final ArrayList<Instruccion> instruccions) {
         super(line, column);

@@ -3,8 +3,8 @@ package com.danimo.models;
 import com.danimo.visitor.Visitor;
 
 public class Cast extends Instruccion {
-    public CastType tipoCast;
-    public Instruccion id;
+    private CastType tipoCast;
+    private Instruccion id;
 
     public Cast(final int line, final int column, final CastType tipoCast, final Instruccion id) {
         super(line, column);

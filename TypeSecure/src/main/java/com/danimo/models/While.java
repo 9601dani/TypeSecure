@@ -5,8 +5,8 @@ import com.danimo.visitor.Visitor;
 import java.util.ArrayList;
 
 public class While extends Instruccion {
-    public Instruccion operation;
-    public ArrayList<Instruccion> instruccions;
+    private Instruccion operation;
+    private ArrayList<Instruccion> instruccions;
 
     public While(final int line, final int column, final Instruccion operation, final ArrayList<Instruccion> instruccions) {
         super(line, column);

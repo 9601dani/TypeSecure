@@ -2,7 +2,8 @@ package com.danimo.models;
 
 import java.util.ArrayList;
 
-public class TablaSimbolos extends ArrayList<Variable> {
+public class TablaSimbolos {
+    private ArrayList<Variable> listaVariable;
     private TablaSimbolos parent;
     private static ArrayList<Function> funciones;
     public TablaSimbolos(TablaSimbolos parent) {
@@ -10,43 +11,46 @@ public class TablaSimbolos extends ArrayList<Variable> {
         if (parent != null) {
            this.parent= parent;
         }
+        this.listaVariable= new ArrayList<>();
+
     }
     public boolean nuevo(Variable variable) {
-        return this.add(variable);
+        return listaVariable.add(variable);
     }
 
     public Variable getWithId(String id) {
-        for (Variable variable : this) {
-            if (variable.getId().equals(id)) {
-                return variable;
-            }
-        }
-        if(!parent.isEmpty()){
-            for (Variable variable : this.parent) {
-                if (variable.getId().equals(id)) {
-                    return variable;
-                }
-            }
-        }
+       TablaSimbolos table= this;
+       Variable variable_return=null;
+
+       do{
+           variable_return= table.listaVariable.stream().filter(var-> var.getId().equals(id)).findFirst().orElse(null);
+           if(variable_return!=null){
+               return variable_return;
+           }
+           table= table.parent;
+       }while(table!=null);
         return null;
     }
 
     public boolean exist(String id) {
-        for (Variable variable : this) {
-            if (variable.getId().equals(id)) {
+        TablaSimbolos table= this;
+        Variable variable_return=null;
+
+        do{
+            variable_return= table.listaVariable.stream().filter(var-> var.getId().equals(id)).findFirst().orElse(null);
+            if(variable_return!=null){
                 return true;
             }
-        }
-        if(!parent.isEmpty()){
-            for (Variable variable : this.parent) {
-                if (variable.getId().equals(id)) {
-                    return true;
-                }
-            }
-        }
-
+            table= table.parent;
+        }while(table!=null);
         return false;
     }
 
-
+    @Override
+    public String toString() {
+        return "TablaSimbolos{" +
+                "listaVariable=" + listaVariable +
+                ", parent=" + parent +
+                '}';
+    }
 }

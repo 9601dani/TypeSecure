@@ -3,9 +3,9 @@ package com.danimo.models;
 import com.danimo.visitor.Visitor;
 
 public class MethodMath extends Instruccion {
-    public TypeMath type;
-    public Instruccion operador_derecho;
-    public Instruccion operador_izquierdo;
+    private TypeMath type;
+    private Instruccion operador_derecho;
+    private Instruccion operador_izquierdo;
 
     public MethodMath(final int line, final int column, final TypeMath type, final Instruccion operador_derecho, final Instruccion operador_izquierdo) {
         super(line, column);

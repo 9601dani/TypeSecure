@@ -1,10 +1,10 @@
 package com.danimo.models;
 
 public class Variable {
-    public String id;
-    public VariableType type;
-    public Object value;
-    public TypeV type_modi;
+    private String id;
+    private VariableType type;
+    private Object value;
+    private TypeV type_modi;
 
     public Variable() {
     }

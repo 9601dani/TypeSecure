@@ -5,7 +5,7 @@ import com.danimo.visitor.Visitor;
 import java.util.ArrayList;
 
 public class ElseState extends Instruccion {
-    public ArrayList<Instruccion> instruccions;
+    private ArrayList<Instruccion> instruccions;
 
     public ElseState(int line,int column, ArrayList<Instruccion> instruccions) {
         super(line, column);

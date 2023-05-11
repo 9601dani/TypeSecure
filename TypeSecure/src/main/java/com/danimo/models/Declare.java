@@ -5,8 +5,8 @@ import com.danimo.visitor.Visitor;
 import java.util.ArrayList;
 
 public class Declare  extends  Instruccion{
-    public Variable.TypeV type_modi;
-    public ArrayList<Instruccion> asignaciones;
+    private Variable.TypeV type_modi;
+    private ArrayList<Instruccion> asignaciones;
 
     public Declare(int line, int column, Variable.TypeV type_modi, ArrayList<Instruccion> asignaciones) {
         super(line, column);

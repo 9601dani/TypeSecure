@@ -5,8 +5,8 @@ import com.danimo.visitor.Visitor;
 import java.util.ArrayList;
 
 public class DoWhile extends Instruccion {
-    public Instruccion operation;
-    public ArrayList<Instruccion> instruccions;
+    private Instruccion operation;
+    private ArrayList<Instruccion> instruccions;
 
     public DoWhile(final int line, final int column, final Instruccion operation, final ArrayList<Instruccion> instruccions) {
         super(line, column);

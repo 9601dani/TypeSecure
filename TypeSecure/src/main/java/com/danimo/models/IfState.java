@@ -5,9 +5,9 @@ import com.danimo.visitor.Visitor;
 import java.util.ArrayList;
 
 public class IfState extends Instruccion{
-    public Instruccion instruccion;
-    public ArrayList<Instruccion> bloque_verdadero;
-    public Instruccion bloque_falso;
+    private Instruccion instruccion;
+    private ArrayList<Instruccion> bloque_verdadero;
+    private Instruccion bloque_falso;
 
     public IfState(int line, int column, Instruccion instruccion, ArrayList<Instruccion> bloque_verdadero,Instruccion bloque_falso){
         super(line,column);

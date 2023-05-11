@@ -5,10 +5,10 @@ import com.danimo.visitor.Visitor;
 import java.util.ArrayList;
 
 public class ForState extends Instruccion {
-    public ArrayList<Instruccion> declaraciones;
-    public Instruccion condition;
-    public Instruccion salto;
-    public ArrayList<Instruccion> instruccions;
+    private ArrayList<Instruccion> declaraciones;
+    private Instruccion condition;
+    private Instruccion salto;
+    private ArrayList<Instruccion> instruccions;
 
     public ForState(final int line, final int column, final ArrayList<Instruccion> declaraciones, final Instruccion condition, final Instruccion salto, final ArrayList<Instruccion> instruccions) {
         super(line, column);

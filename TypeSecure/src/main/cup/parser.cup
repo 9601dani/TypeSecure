@@ -4,12 +4,12 @@ import com.danimo.objects.Token;
 import java.util.ArrayList;
 import java_cup.runtime.Symbol;
 import com.danimo.manageError.ObjectErr;
+import com.danimo.manageError.TypeSecureError;
 
 class ParserSecure;
 parser code {:
         public ParserSecure(SecureLex lexer){
             super(lexer);
-             private static ArrayList<ObjectErr> errorForClient=TypeSecureError.getTypeErrorSingleton().errores;
         }
        public Symbol scan() throws Exception {
                   Symbol symbol = this.getScanner().next_token();
@@ -137,15 +137,19 @@ inic ::=
 instrucciones ::=
                     instrucciones:a instruccion:b
                     {:
+                    RESULT= a;
+                    if(b!=null){
                         ((ArrayList<Instruccion>)a).add((Instruccion)b);
-                        RESULT= a;
+                    }
                     :}
 				 |  instruccion:b
 				    {:
 				       RESULT= new ArrayList<Instruccion>();
-                       RESULT.add((Instruccion)b);
+				       if(b!=null){
+                          RESULT.add((Instruccion)b);
+                       }
+
 				    :}
-				 |error
 ;
 
 instruccion ::=
@@ -160,6 +164,7 @@ instruccion ::=
 				|   funtion_pro:pro {:RESULT = pro;:}
 				|   call_funtion:pro PUNTO_COMA     {:RESULT = pro;:}
 				|   assig_pro:pro PUNTO_COMA {:RESULT= pro;:}
+				| error PUNTO_COMA
 ;
 
 declare_pro ::=
@@ -168,10 +173,10 @@ declare_pro ::=
                             RESULT = new Declare(((Token)a).getLine(),((Token)a).getColumn(),returnTypeV(((Token)a).getLexeme()), (ArrayList<Instruccion>)b);
                 :}
 ;
-declare ::= declare:a COMA assignacion_pro:b
+declare ::= declare:c COMA assignacion_pro:b
                {:
-                ((ArrayList<Instruccion>)a).add((Instruccion)b);
-                RESULT= a;
+                ((ArrayList<Instruccion>)c).add((Instruccion)b);
+                RESULT= c;
                :}
 		|	assignacion_pro:b
 		        {:
@@ -370,9 +375,9 @@ method_math ::=
               | method_string:prod1 {:RESULT = prod1;:}
 ;
 method_string ::=
-                h:id type_method_string:prod2 {:RESULT = new MethodString(((Value)id).getLine(), ((Value)id).getColumn(),((Value)id).value.toString(),returnTypeMethodString(((Token)prod2).getLexeme()),null);:}
-                | h:id CHARAT L_PARENT a:prod R_PARENT   {:RESULT = new MethodString(((Value)id).getLine(), ((Value)id).getColumn(),((Value)id).value.toString(), MethodString.MethodType.CHARAT,(Instruccion)prod);:}
-                | h:id CONCAT L_PARENT a:prod R_PARENT   {:RESULT = new MethodString(((Value)id).getLine(), ((Value)id).getColumn(),((Value)id).value.toString(), MethodString.MethodType.CONCAT,(Instruccion)prod);:}
+                h:id type_method_string:prod2 {:RESULT = new MethodString(((Value)id).getLine(), ((Value)id).getColumn(),((Value)id).getValue().toString(),returnTypeMethodString(((Token)prod2).getLexeme()),null);:}
+                | h:id CHARAT L_PARENT a:prod R_PARENT   {:RESULT = new MethodString(((Value)id).getLine(), ((Value)id).getColumn(),((Value)id).getValue().toString(), MethodString.MethodType.CHARAT,(Instruccion)prod);:}
+                | h:id CONCAT L_PARENT a:prod R_PARENT   {:RESULT = new MethodString(((Value)id).getLine(), ((Value)id).getColumn(),((Value)id).getValue().toString(), MethodString.MethodType.CONCAT,(Instruccion)prod);:}
               // produccion si viene mas de un concat
                 |h:prod1 {:RESULT = prod1;:}
 ;
