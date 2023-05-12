@@ -7,7 +7,7 @@ public class MethodMath extends Instruccion {
     private Instruccion operador_derecho;
     private Instruccion operador_izquierdo;
 
-    public MethodMath(final int line, final int column, final TypeMath type, final Instruccion operador_derecho, final Instruccion operador_izquierdo) {
+    public MethodMath(final int line, final int column, final TypeMath type, final Instruccion operador_izquierdo, final Instruccion operador_derecho) {
         super(line, column);
         this.type = type;
         this.operador_derecho = operador_derecho;

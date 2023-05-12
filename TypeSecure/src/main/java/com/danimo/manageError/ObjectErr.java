@@ -58,8 +58,14 @@ public class ObjectErr {
 
     @Override
     public String toString() {
-        return "\nToken: '" + value + '\'' +
-                " line: " + line +
-                "column: " + column +" "+ description;
+        if(value=="null" || value ==" " || value== null){
+            return " line: " + line +
+                    "column: " + column +" "+ description;
+        }else{
+            return "\nToken: '" + value + '\'' +
+                    " line: " + line +
+                    "column: " + column +" "+ description;
+        }
+
     }
 }
