@@ -23,7 +23,7 @@ public class DebugRunner extends Visitor {
         }else{
             Variable value= new Variable();
             value= (Variable) i.getValue().accept(this);
-            System.out.println(value);
+            /*System.out.println(value);*/
             if(value!=null){ //
                 if(i.getType().equals(value.getType())){
                     variable.setId(i.getId());
@@ -31,7 +31,7 @@ public class DebugRunner extends Visitor {
                     variable.setType(i.getType());
                     return variable;
                 }else if(i.getType().equals(Variable.VariableType.DEFINIRLA)){
-                    System.out.println("entre a definirla");
+                    /*System.out.println("entre a definirla");*/
                     variable.setId(i.getId());
                     variable.setValue(value.getValue());
                     variable.setType(value.getType());
@@ -137,7 +137,7 @@ public class DebugRunner extends Visitor {
                                 if(result== Math.floor(result)){
                                     System.out.println("desde cast");
                                     variable_return.setValue(String.valueOf(result.intValue()) );
-                                    System.out.println(variable_return.getValue());
+                                   /* System.out.println(variable_return.getValue());*/
                                     return variable_return;
                                 }
                                 variable_return.setValue(result.toString());
@@ -216,12 +216,7 @@ public class DebugRunner extends Visitor {
                                 return  variable;
                             }
                             case BOOLEAN -> {
-                                System.out.println("jauno");
-                                //REVISAR ERROR
-                               /* System.out.println("---------"+(String)variable.getValue());*/
-                                System.out.println("algo pmt");
                                 Boolean result=Boolean.valueOf((String)variable.getValue());
-                                System.out.println("result "+result);
                                 variable_return.setType(Variable.VariableType.BIGINT);
                                 variable_return.setId(variable.getId());
                                 if(result){
@@ -254,7 +249,6 @@ public class DebugRunner extends Visitor {
                                 }
                                 // error al castear
                                 int result=Integer.parseInt((String)((String) variable.getValue()).replace("n",""));
-                                System.out.println("- "+result);
                                 if(result==-1){
                                     new Exception("error");
                                 }
@@ -283,6 +277,29 @@ public class DebugRunner extends Visitor {
         i.getInstruccions().forEach(ele->{
             ele.accept(this);
         });*/
+        ArrayList<Variable> arrayDatos= new ArrayList<>();
+        i.getInstruccions().forEach(ele -> {
+            Variable txts = (Variable) ele.accept(this);
+            if(txts!=null){
+                String value;
+                System.out.println("Variable-> "+txts.toString());
+            /*if(txts.getValue().equals(Variable.VariableType.NUMBER)){
+                value = Integer.toString((int)txts.getValue());
+            }else{
+                value = (String) txts.getValue();
+            }
+
+            if (value != null && !"undefined".equals(value) && !"UNDEFINED".equals(value)) {
+                arrayDatos.add(txts);
+            }*/
+                arrayDatos.add(txts);
+            }
+       });
+        String txt="";
+        for(int p=0; p<arrayDatos.size();p++){
+            txt+=(String)  arrayDatos.get(p).getValue();
+        }
+        System.out.println("CONSOLE \n" + txt);
         return null;
     }
 
@@ -323,6 +340,26 @@ public class DebugRunner extends Visitor {
         i.getInstruccions().forEach(ele->{
             ele.accept(this);
         });*/
+        Variable vr=(Variable) i.getOperation().accept(this);
+        if(vr!=null){
+            TablaSimbolos tmp= new TablaSimbolos(this.table);
+            this.table=tmp;
+/*        for(Instruccion ele: i.getInstruccions()){
+            if(ele.getClass().equals(Break.class)){
+                break;
+            }
+            ele.accept(this);
+        }*/
+            i.getInstruccions().forEach(ele->{
+                if(ele.getClass().equals(Break.class)){
+
+                }
+                ele.accept(this);
+
+            });
+            this.table=this.table.getParent();
+            return null;
+        }
         return null;
     }
 
@@ -331,11 +368,14 @@ public class DebugRunner extends Visitor {
        /*i.getInstruccions().forEach(ele->{
            ele.accept(this);
        });*/
+        TablaSimbolos table_else= new TablaSimbolos(this.table);
+        this.table= table_else;
         if(i!=null){
             i.getInstruccions().forEach(ele->{
                 ele.accept(this);
             });
         }
+        this.table= this.table.getParent();
         return null;
     }
 
@@ -371,15 +411,29 @@ public class DebugRunner extends Visitor {
                i.getBloque_falso().accept(this);
             }
         }*/
-        i.getInstruccion().accept(this);
-        i.getBloque_verdadero().forEach(ele->{
-            ele.accept(this);
-        });
-        if(i.getBloque_falso()!=null){
-            i.getBloque_falso().accept(this);
+        try{
+            i.getInstruccion().accept(this);
+            /*        TablaSimbolos tb= this.table;*/
+            TablaSimbolos tmp_if= new TablaSimbolos(this.table);
+            this.table=tmp_if;
+            i.getBloque_verdadero().forEach(ele->{
+                ele.accept(this);
+            });
+            System.out.println("IF->\n"+this.table);
+            this.table= this.table.getParent();
+            TablaSimbolos tmp_else= new TablaSimbolos(this.table);
+            this.table=tmp_else;
+            if(i.getBloque_falso()!=null){
+                i.getBloque_falso().accept(this);
+                return null;
+            }
+            this.table= this.table.getParent();
+            System.out.println("ELSE->\n"+this.table);
+            return null;
+        }catch (Exception e){
             return null;
         }
-        return null;
+
 
     }
 
@@ -602,7 +656,7 @@ public class DebugRunner extends Visitor {
                         variable_return.setType(Variable.VariableType.STRING);
                         return variable_return;
                     }else{
-                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser STRING para metodo LOWECASE"));
+                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser STRING para metodo LOWECASE no "+variable.getType()));
                         return null;
                     }
                 }else{
@@ -618,7 +672,7 @@ public class DebugRunner extends Visitor {
                         variable_return.setType(Variable.VariableType.STRING);
                         return variable_return;
                     }else{
-                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser STRING para metodo UpperCASE"));
+                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser STRING para metodo UpperCASE no "+variable.getType()));
                         return null;
                     }
                 }else{
@@ -630,11 +684,11 @@ public class DebugRunner extends Visitor {
                 Variable variable=this.table.getWithId(i.getId());
                 if(variable!=null){
                     if(variable.getType().equals(Variable.VariableType.STRING)){
-                        variable_return.setValue(((String)variable.getValue()).length());
+                        variable_return.setValue(Integer.toString(((String)variable.getValue()).length()));
                         variable_return.setType(Variable.VariableType.NUMBER);
                         return variable_return;
                     }else{
-                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser STRING para metodo length"));
+                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser STRING para metodo length no "+variable.getType()));
                         return null;
                     }
                 }else{
@@ -659,7 +713,7 @@ public class DebugRunner extends Visitor {
                                     return null;
                                 }
                             }else{
-                                errorForClient.add(new ObjectErr(variable.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Se necesita enviar una variable numero"));
+                                errorForClient.add(new ObjectErr(variable.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Se necesita enviar una variable numero no "+variable.getType()+ " metodo CHARAT"));
                                 return null;
                             }
                         }else{
@@ -675,6 +729,34 @@ public class DebugRunner extends Visitor {
                     return null;
                 }
             }
+            case CONCAT -> {
+                Variable variable=(Variable) i.getOperador_derecho().accept(this);
+                if(variable!=null){
+                    Variable vr= this.table.getWithId(i.getId());
+                    if(vr!=null){
+                        if(vr.getType().equals(Variable.VariableType.STRING)){
+                            if(variable.getType().equals(Variable.VariableType.STRING)){
+                                String r= ((String)variable.getValue());
+                                    variable_return.setValue(((String)vr.getValue()).concat((String)variable.getValue()));
+                                    variable_return.setType(Variable.VariableType.STRING);
+                                    return variable_return;
+                            }else{
+                                errorForClient.add(new ObjectErr(variable.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Se necesita enviar una variable String no "+variable.getType() +" metodo_concat"));
+                                return null;
+                            }
+                        }else{
+                            errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser String para metodo CONCAT"));
+                            return null;
+                        }
+                    }else{
+                        errorForClient.add(new ObjectErr(i.getId(),i.getLine(),i.getColumn(),"SEMANTICO","No existe la variable_ CONCAT "));
+                        return null;
+                    }
+                }else{
+                    errorForClient.add(new ObjectErr(i.getId(),i.getLine(),i.getColumn(),"SEMANTICO","dato erroneo en CONCAT"));
+                    return null;
+                }
+            }
         }
         return null;
     }
@@ -682,7 +764,12 @@ public class DebugRunner extends Visitor {
     @Override
     public Variable visit(OperacionBinaria i) {
         Variable ope_left= (Variable) i.getOperador_izquierdo().accept(this);
-        Variable ope_rigth= (Variable) i.getOperador_derecho().accept(this);
+        Variable ope_rigth= null;
+        if(i.getOperador_derecho()!=null){
+             ope_rigth= (Variable) i.getOperador_derecho().accept(this);
+        }else{
+             ope_rigth= null;
+        }
         Variable variable_return= new Variable();
         /*System.out.println(ope_left.toString());
         System.out.printf(ope_rigth.toString());
@@ -699,7 +786,7 @@ public class DebugRunner extends Visitor {
                             Double result=Double.parseDouble((String) ope_left.getValue()) +Double.parseDouble((String) ope_rigth.getValue());
                             variable_return.setType(Variable.VariableType.NUMBER);
                             if(result== Math.floor(result)){
-                                variable_return.setValue(String.valueOf(result.intValue()) );
+                                variable_return.setValue(Integer.toString(result.intValue()) );
                                 return variable_return;
                             }
                             variable_return.setValue(String.valueOf(result) );
@@ -980,19 +1067,6 @@ public class DebugRunner extends Visitor {
                             return null;
                         }
                     }
-                    case MAS_MAS -> {
-                        if(ope_left.getType().equals(Variable.VariableType.BIGINT) && ope_left.getType().equals(Variable.VariableType.NUMBER)){
-                            switch (ope_left.getType()){
-                                case BIGINT -> {
-                                        /*aqui sigue le metodo, revisar cup*/
-                                }
-                            }
-                        }else{
-                            errorForClient.add(new ObjectErr(ope_left.getType().toString(), i.getLine(),i.getColumn(),"SEMANTICO", "El tipo no es operable con incrementar '++'"));
-                            return null;
-                        }
-
-                    }
                 }
             } else if (ope_left.getType().equals(Variable.VariableType.STRING) || ope_rigth.getType().equals(Variable.VariableType.STRING)) {
                 if(i.getType().equals(OperationType.MAS)){
@@ -1008,9 +1082,64 @@ public class DebugRunner extends Visitor {
                 errorForClient.add(new ObjectErr(ope_left.getType()+ " y " + ope_rigth.getType(), i.getLine(),i.getColumn(),"SEMANTICO", "Los tipos de dato son distintos y no pueden ser operados"));
                 return null;
             }
+        }else if(ope_left!=null){
+            switch (i.getType()){
+                case MAS_MAS -> {
+                    System.out.println((String) ope_left.getValue());
+                    if(ope_left.getType().equals(Variable.VariableType.BIGINT) || ope_left.getType().equals(Variable.VariableType.NUMBER)){
+                        switch (ope_left.getType()){
+                            case BIGINT -> {
+                                Variable vr=this.table.getWithId(ope_left.getId());
+                                int tmp= extractNumber((String)ope_left.getValue());
+                                tmp++;
+                                vr.setValue(Integer.toString(tmp)+"n");
+                                /*variable_return.setType(Variable.VariableType.BIGINT);*/
+                                return variable_return;
+                            }
+                            case NUMBER -> {
+                                Variable vr=this.table.getWithId(ope_left.getId());
+                                Double tmp= Double.parseDouble((String)ope_left.getValue());
+                                tmp++;
+                                vr.setValue(Double.toString(tmp));
+                                variable_return.setType(Variable.VariableType.NUMBER);
+                                return  variable_return;
+                            }
+                        }
+                    }else{
+                        errorForClient.add(new ObjectErr(ope_left.getType().toString(), i.getLine(),i.getColumn(),"SEMANTICO", "El tipo no es operable con incrementar '++'"));
+                        return null;
+                    }
+
+                }
+                case MENOS_MENOS -> {
+                    if(ope_left.getType().equals(Variable.VariableType.BIGINT) || ope_left.getType().equals(Variable.VariableType.NUMBER)){
+                        switch (ope_left.getType()){
+                            case BIGINT -> {
+                                Variable vr=this.table.getWithId(ope_left.getId());
+                                int tmp= extractNumber((String)ope_left.getValue());
+                                tmp--;
+                                vr.setValue(Integer.toString(tmp)+"n");
+                                /*variable_return.setType(Variable.VariableType.BIGINT);*/
+                                return variable_return;
+                            }
+                            case NUMBER -> {
+                                Variable vr=this.table.getWithId(ope_left.getId());
+                                Double tmp= Double.parseDouble((String)ope_left.getValue());
+                                tmp--;
+                                vr.setValue(Double.toString(tmp));
+                                variable_return.setType(Variable.VariableType.NUMBER);
+                                return  variable_return;
+                            }
+                        }
+                    }else{
+                        errorForClient.add(new ObjectErr(ope_left.getType().toString(), i.getLine(),i.getColumn(),"SEMANTICO", "El tipo no es operable con incrementar '++'"));
+                        return null;
+                    }
+                }
+            }
         }
        // errorForClient.add(new ObjectErr(" ", i.getLine(),i.getColumn(),"SEMANTICO", "Hubo error en la operacion, hay valores nulos"));
-        System.out.println("nulos");
+       /* System.out.println("nulos");*/
         return null;
     }
 
@@ -1074,6 +1203,53 @@ public class DebugRunner extends Visitor {
         i.getInstruccions().forEach(ele->{
             ele.accept(this);
         });*/
+        try{
+            Variable vr=(Variable) i.getOperation().accept(this);
+            TablaSimbolos tmp= new TablaSimbolos(this.table);
+            this.table=tmp;
+/*        for(Instruccion ele: i.getInstruccions()){
+            if(ele.getClass().equals(Break.class)){
+                break;
+            }
+            ele.accept(this);
+        }*/
+            i.getInstruccions().forEach(ele->{
+                if(ele.getClass().equals(Break.class)){
+
+                }
+                ele.accept(this);
+
+            });
+            this.table=this.table.getParent();
+            return null;
+        }catch (Exception e){
+            return null;
+        }
+       /* if(vr!=null &&  vr.getValue()!=null && (String) vr.getValue()!="undefined"){
+
+        }else{
+            errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "Error de comparacion en While"));
+            return null;
+        }*/
+    }
+
+    @Override
+    public Instruccion visit(Return i) {
+        return null;
+    }
+
+    @Override
+    public Instruccion visit(Continue i) {
+        return null;
+    }
+
+    @Override
+    public Instruccion visit(Break i) {
+        return null;
+    }
+
+    @Override
+    public Variable visit(Call i) {
         return null;
     }
 

@@ -91,7 +91,6 @@ parser code {:
                 return null;
           }
           public MethodString.MethodType returnTypeMethodString(String data){
-          System.out.println("enviado: "+ data);
                 if(data.equalsIgnoreCase(".TOLOWERCASE()")){
                     return MethodString.MethodType.LOWERCASE;
                 }else if(data.equalsIgnoreCase(".TOUPPERCASE()")){
@@ -118,7 +117,7 @@ CHARAT,TO_LOWER_CASE,TO_UPPER_CASE,CONCAT,IF,ELSE,FOR,WHILE,DO,BREAK,CONTINUE,FU
 MATH_ABS,MATH_CEIL,MATH_COS,MATH_SIN,MATH_TAN,MATH_EXP,MATH_FLOOR,MATH_POW,MATH_SQRT,MATH_RANDOM,PRINT_AST,GET_SYMBOL_TABLE,
 SYM,ERROR,MOD,MAS_MAS,MENOS_MENOS, L_LLAVE, R_LLAVE;
 nonterminal instruccion,type,type_f,settear,a,method_string,method_math,type_method_string,parame,
-            b,c,d,e,f,g,h,i,if_pro,while_pro,console_pro,else_pro,for_pro
+            b,c,d,e,f,g,h,i,if_pro,while_pro,console_pro,else_pro,for_pro,continue_pro,break_pro,return_pro
             , do_while_pro,sumadores_pro,assignacion_pro,assig_pro,funtion_pro, call_funtion;
 nonterminal Ast inic;
 nonterminal  Declare declare_pro;
@@ -164,6 +163,9 @@ instruccion ::=
 				|   funtion_pro:pro {:RESULT = pro;:}
 				|   call_funtion:pro PUNTO_COMA     {:RESULT = pro;:}
 				|   assig_pro:pro PUNTO_COMA {:RESULT= pro;:}
+				|   return_pro:pro PUNTO_COMA {:RESULT= pro;:}
+				|   continue_pro:pro PUNTO_COMA {:RESULT=pro;:}
+				|   break_pro:pro   PUNTO_COMA {:RESULT=pro;:}
 				| error PUNTO_COMA
 ;
 
@@ -295,16 +297,28 @@ parame ::=
             |
 ;
 call_funtion::=
-                LITERAL L_PARENT assignacion_pro R_PARENT
-              |  LITERAL L_PARENT R_PARENT
+                LITERAL:id L_PARENT assignacion_pro:asig R_PARENT
+{:RESULT= new Call(((Token)id).getLine(),((Token)id).getColumn(),((Token)id).getLexeme(), (ArrayList<Instruccion>)asig);:}
+              |  LITERAL:id L_PARENT R_PARENT
+{:RESULT= new Call(((Token)id).getLine(),((Token)id).getColumn(),((Token)id).getLexeme(), null);:}
 ;
 sumadores_pro::=
-            LITERAL MAS_MAS
-{::}
-          | LITERAL MENOS_MENOS
-{::}
+            LITERAL:id MAS_MAS
+{:RESULT= new OperacionBinaria(((Token)id).getLine(),((Token)id).getColumn(),OperationType.MAS_MAS,((Instruccion)new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.LITERAL)),null);:}
+          | LITERAL:id MENOS_MENOS
+{:RESULT= new OperacionBinaria(((Token)id).getLine(),((Token)id).getColumn(),OperationType.MENOS_MENOS,((Instruccion)new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.LITERAL)),null);:}
 ;
 
+continue_pro::=
+    CONTINUE :conti {:RESULT = new Continue(((Token)conti).getLine(),((Token)conti).getColumn());:}
+;
+break_pro::=
+    BREAK:brea {:RESULT= new Break(((Token)brea).getLine(), ((Token)brea).getColumn());:}
+;
+return_pro::=
+        RETURN:retu {:RESULT=new Return(((Token)retu).getLine(),((Token)retu).getColumn(), null);:}
+        | RETURN:retu a:dp {:RESULT=new Return(((Token)retu).getLine(),((Token)retu).getColumn(),(Instruccion)dp);:}
+;
 
 a ::= a:pro1 OR b:pro2
 {:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.OR,(Instruccion)pro1,(Instruccion)pro2);:}

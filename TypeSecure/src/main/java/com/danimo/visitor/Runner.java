@@ -92,6 +92,26 @@ public class Runner extends Visitor{
         return null;
     }
 
+    @Override
+    public Instruccion visit(Return i) {
+        return null;
+    }
+
+    @Override
+    public Instruccion visit(Continue i) {
+        return null;
+    }
+
+    @Override
+    public Instruccion visit(Break i) {
+        return null;
+    }
+
+    @Override
+    public Variable visit(Call i) {
+        return null;
+    }
+
     public TablaSimbolos getTable() {
         return this.table;
     }

@@ -53,4 +53,28 @@ public class TablaSimbolos {
                 ", parent=" + parent +
                 '}';
     }
+
+    public ArrayList<Variable> getListaVariable() {
+        return this.listaVariable;
+    }
+
+    public void setListaVariable(final ArrayList<Variable> listaVariable) {
+        this.listaVariable = listaVariable;
+    }
+
+    public TablaSimbolos getParent() {
+        return this.parent;
+    }
+
+    public void setParent(final TablaSimbolos parent) {
+        this.parent = parent;
+    }
+
+    public static ArrayList<Function> getFunciones() {
+        return TablaSimbolos.funciones;
+    }
+
+    public static void setFunciones(final ArrayList<Function> funciones) {
+        TablaSimbolos.funciones = funciones;
+    }
 }

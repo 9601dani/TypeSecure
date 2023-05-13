@@ -60,6 +60,5 @@ public class IfState extends Instruccion{
     @Override
     public Instruccion accept(Visitor v) {
         return v.visit(this);
-
     }
 }
