@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.danimo.Main.view_console;
+
 public class DebugRunner extends Visitor {
     private static ArrayList<ObjectErr> errorForClient= TypeSecureError.getTypeErrorSingleton().errores;
     private TablaSimbolos table= new TablaSimbolos(null);
@@ -17,7 +19,7 @@ public class DebugRunner extends Visitor {
         Variable variable= new Variable();
         if(i.getValue()==null){
             variable.setId(i.getId());
-            variable.setValue("undefined");
+            variable.setValue(Variable.VariableType.UNDEFINED.toString());
             variable.setType(i.getType());
             return  variable;
         }else{
@@ -53,7 +55,6 @@ public class DebugRunner extends Visitor {
     public Variable visit(OnlyAssingment i) {
         Variable variable=this.table.getWithId(i.getId());
         Variable tmp= new Variable();
-
         if(variable!=null){
             if(!variable.getType_modi().equals(Variable.TypeV.CONST)){
                 tmp=(Variable) i.getValue().accept(this);
@@ -78,7 +79,7 @@ public class DebugRunner extends Visitor {
     public Variable visit(Cast i) {
         Variable variable= (Variable)i.getId().accept(this);
         Variable variable_return= new Variable();
-        if(variable!=null){
+        if(variable!=null /*&& (String)variable.getValue()!= Variable.VariableType.UNDEFINED.toString()*/){
             switch (i.getTipoCast()){
                 case STRING -> {
                     try{
@@ -264,7 +265,12 @@ public class DebugRunner extends Visitor {
                 }
             }
         }else{
-            //errorForClient.add(new ObjectErr("mande error en cast",i.getLine(), i.getColumn(), "SEMANTICO","Variable no definida"));
+            if(variable!=null){
+                errorForClient.add(new ObjectErr(variable.getId(),i.getLine(), i.getColumn(), "SEMANTICO","Variable no definida/undefined"));
+                System.out.println("casteo null");
+                return null;
+            }
+           errorForClient.add(new ObjectErr(null,i.getLine(), i.getColumn(), "SEMANTICO","Variable no definida/undefined"));
             System.out.println("casteo null");
             return null;
         }
@@ -321,7 +327,7 @@ public class DebugRunner extends Visitor {
                     vr1.setType_modi(i.getType_modi());
                     if(ele!=null){
                         Variable asigment=(Variable) ele.accept(this);
-                        if(asigment!= null){
+                        if(asigment!= null && asigment.getType()!=null){
                             if(i.getType_modi().equals(Variable.TypeV.CONST) && asigment.getValue().equals("undefined")){
                                 errorForClient.add(new ObjectErr(asigment.getId(), i.getLine(),i.getColumn(),"SEMANTICO", "Una variable CONST debe tener un valor asignado"));
                             }else{
@@ -331,13 +337,13 @@ public class DebugRunner extends Visitor {
                                 this.table.nuevo(vr1);
                             }
                         }else{
-                            //errorForClient.add(new ObjectErr(" ", i.getLine(),i.getColumn(),"SEMANTICO", "No se pudo asignar un valor"));
+                            errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "No se pudo asignar un valor, no se le asigno valor/tipo de variable"));
                             System.out.println("la asignacion en nula");
                         }
                     }
                 });
             }else{
-                errorForClient.add(new ObjectErr(" ", i.getLine(),i.getColumn(),"SEMANTICO", "No se asigno si la variable es const o let"));
+                errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "No se asigno si la variable es const o let"));
                 System.out.println("error en el tipo de dato en la declaracion");
             }
         }
@@ -497,6 +503,7 @@ public class DebugRunner extends Visitor {
     public Variable visit(MethodMath i) {
        /* System.out.println("DEBUG METHODMATH");*/
         Variable variable_return = new Variable();
+
         switch (i.getType()){
             case E->{
                  variable_return.setType(Variable.VariableType.NUMBER);
@@ -518,16 +525,21 @@ public class DebugRunner extends Visitor {
 
                 Variable vr= (Variable) i.getOperador_izquierdo().accept(this);
                 if(vr!=null){
-                    if(vr.getType().equals(Variable.VariableType.NUMBER)){
-                        Double value_return=(Math.abs(Double.parseDouble((String)vr.getValue())));
-                        if(value_return== Math.floor(value_return)){
-                            variable_return.setValue(Integer.toString(value_return.intValue()));
-                            return variable_return;
+                    if((String)vr.getValue()!= Variable.VariableType.UNDEFINED.toString()){
+                        if(vr.getType().equals(Variable.VariableType.NUMBER)){
+                            Double value_return=(Math.abs(Double.parseDouble((String)vr.getValue())));
+                            if(value_return== Math.floor(value_return)){
+                                variable_return.setValue(Integer.toString(value_return.intValue()));
+                                return variable_return;
+                            }
+                            variable_return.setValue(Double.toString(value_return));
+                            return  variable_return;
+                        }else{
+                            errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion ABS"));
+                            return null;
                         }
-                        variable_return.setValue(Double.toString(value_return));
-                        return  variable_return;
                     }else{
-                        errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion ABS"));
+                        errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","El valor de la variable es undefined _ABS"));
                         return null;
                     }
                 }
@@ -538,16 +550,22 @@ public class DebugRunner extends Visitor {
                 variable_return.setType(Variable.VariableType.NUMBER);
                 Variable vr= (Variable) i.getOperador_izquierdo().accept(this);
                 if(vr!=null){
-                    if(vr.getType().equals(Variable.VariableType.NUMBER)){
-                        Double value_return=(Math.ceil(Double.parseDouble((String)vr.getValue())));
-                        if(value_return== Math.floor(value_return)){
-                            variable_return.setValue(Integer.toString(value_return.intValue()));
-                            return variable_return;
+                    if((String)vr.getValue()!= Variable.VariableType.UNDEFINED.toString()){
+                        if(vr.getType().equals(Variable.VariableType.NUMBER)){
+                            Double value_return=(Math.ceil(Double.parseDouble((String)vr.getValue())));
+                            if(value_return== Math.floor(value_return)){
+                                variable_return.setValue(Integer.toString(value_return.intValue()));
+                                return variable_return;
+                            }
+                            variable_return.setValue(Double.toString(value_return));
+                            return  variable_return;
+                        }else{
+                            errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion Ceil"));
+                            return null;
                         }
-                        variable_return.setValue(Double.toString(value_return));
-                        return  variable_return;
+
                     }else{
-                        errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion Ceil"));
+                        errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","El valor de la variable es undefined _CEIL"));
                         return null;
                     }
                 }
@@ -558,16 +576,21 @@ public class DebugRunner extends Visitor {
                 variable_return.setType(Variable.VariableType.NUMBER);
                 Variable vr= (Variable) i.getOperador_izquierdo().accept(this);
                 if(vr!=null){
-                    if(vr.getType().equals(Variable.VariableType.NUMBER)){
-                        Double value_return=(Math.cos(Double.parseDouble((String)vr.getValue())));
-                        if(value_return== Math.floor(value_return)){
-                            variable_return.setValue(Integer.toString(value_return.intValue()));
-                            return variable_return;
+                    if((String)vr.getValue()!= Variable.VariableType.UNDEFINED.toString()){
+                        if(vr.getType().equals(Variable.VariableType.NUMBER)){
+                            Double value_return=(Math.cos(Double.parseDouble((String)vr.getValue())));
+                            if(value_return== Math.floor(value_return)){
+                                variable_return.setValue(Integer.toString(value_return.intValue()));
+                                return variable_return;
+                            }
+                            variable_return.setValue(Double.toString(value_return));
+                            return  variable_return;
+                        }else{
+                            errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion Cos"));
+                            return null;
                         }
-                        variable_return.setValue(Double.toString(value_return));
-                        return  variable_return;
                     }else{
-                        errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion Cos"));
+                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","El valor de la variable es undefined _COS"));
                         return null;
                     }
                 }
@@ -578,36 +601,46 @@ public class DebugRunner extends Visitor {
                 variable_return.setType(Variable.VariableType.NUMBER);
                 Variable vr= (Variable) i.getOperador_izquierdo().accept(this);
                 if(vr!=null){
-                    if(vr.getType().equals(Variable.VariableType.NUMBER)){
-                        Double value_return=(Math.sin(Double.parseDouble((String)vr.getValue())));
-                        if(value_return== Math.floor(value_return)){
-                            variable_return.setValue(Integer.toString(value_return.intValue()));
-                            return variable_return;
+                    if((String)vr.getValue()!= Variable.VariableType.UNDEFINED.toString()){
+                        if(vr.getType().equals(Variable.VariableType.NUMBER)){
+                            Double value_return=(Math.sin(Double.parseDouble((String)vr.getValue())));
+                            if(value_return== Math.floor(value_return)){
+                                variable_return.setValue(Integer.toString(value_return.intValue()));
+                                return variable_return;
+                            }
+                            variable_return.setValue(Double.toString(value_return));
+                            return  variable_return;
+                        }else{
+                            errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion SIN"));
+                            return null;
                         }
-                        variable_return.setValue(Double.toString(value_return));
-                        return  variable_return;
-                    }else{
-                        errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion SIN"));
+                    }else {
+                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","El valor de la variable es undefined _SIN"));
                         return null;
                     }
                 }
-                errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","El dato no se encontro _ SIN"));
+                errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","El dato no se encontro _SIN"));
                 return null;
             }
             case TAN -> {
                 variable_return.setType(Variable.VariableType.NUMBER);
                 Variable vr= (Variable) i.getOperador_izquierdo().accept(this);
                 if(vr!=null){
-                    if(vr.getType().equals(Variable.VariableType.NUMBER)){
-                        Double value_return=(Math.tan(Double.parseDouble((String)vr.getValue())));
-                        if(value_return== Math.floor(value_return)){
-                            variable_return.setValue(Integer.toString(value_return.intValue()));
-                            return variable_return;
+                    if((String)vr.getValue()!= Variable.VariableType.UNDEFINED.toString()){
+                        if(vr.getType().equals(Variable.VariableType.NUMBER)){
+                            Double value_return=(Math.tan(Double.parseDouble((String)vr.getValue())));
+                            if(value_return== Math.floor(value_return)){
+                                variable_return.setValue(Integer.toString(value_return.intValue()));
+                                return variable_return;
+                            }
+                            variable_return.setValue(Double.toString(value_return));
+                            return  variable_return;
+                        }else{
+                            errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion TAN"));
+                            return null;
                         }
-                        variable_return.setValue(Double.toString(value_return));
-                        return  variable_return;
-                    }else{
-                        errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion TAN"));
+                    }else {
+                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","El valor de la variable es undefined _TAN"));
                         return null;
                     }
                 }
@@ -618,16 +651,21 @@ public class DebugRunner extends Visitor {
                 variable_return.setType(Variable.VariableType.NUMBER);
                 Variable vr= (Variable) i.getOperador_izquierdo().accept(this);
                 if(vr!=null){
-                    if(vr.getType().equals(Variable.VariableType.NUMBER)){
-                        Double value_return=(Math.exp(Double.parseDouble((String)vr.getValue())));
-                        if(value_return== Math.floor(value_return)){
-                            variable_return.setValue(Integer.toString(value_return.intValue()));
-                            return variable_return;
+                    if((String)vr.getValue()!= Variable.VariableType.UNDEFINED.toString()){
+                        if(vr.getType().equals(Variable.VariableType.NUMBER)){
+                            Double value_return=(Math.exp(Double.parseDouble((String)vr.getValue())));
+                            if(value_return== Math.floor(value_return)){
+                                variable_return.setValue(Integer.toString(value_return.intValue()));
+                                return variable_return;
+                            }
+                            variable_return.setValue(Double.toString(value_return));
+                            return  variable_return;
+                        }else{
+                            errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion EXP"));
+                            return null;
                         }
-                        variable_return.setValue(Double.toString(value_return));
-                        return  variable_return;
                     }else{
-                        errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion EXP"));
+                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","El valor de la variable es undefined _EXP"));
                         return null;
                     }
                 }
@@ -638,16 +676,21 @@ public class DebugRunner extends Visitor {
                 variable_return.setType(Variable.VariableType.NUMBER);
                 Variable vr= (Variable) i.getOperador_izquierdo().accept(this);
                 if(vr!=null){
-                    if(vr.getType().equals(Variable.VariableType.NUMBER)){
-                        Double value_return=(Math.floor(Double.parseDouble((String)vr.getValue())));
-                        if(value_return== Math.floor(value_return)){
-                            variable_return.setValue(Integer.toString(value_return.intValue()));
-                            return variable_return;
+                    if((String)vr.getValue()!= Variable.VariableType.UNDEFINED.toString()){
+                        if(vr.getType().equals(Variable.VariableType.NUMBER)){
+                            Double value_return=(Math.floor(Double.parseDouble((String)vr.getValue())));
+                            if(value_return== Math.floor(value_return)){
+                                variable_return.setValue(Integer.toString(value_return.intValue()));
+                                return variable_return;
+                            }
+                            variable_return.setValue(Double.toString(value_return));
+                            return  variable_return;
+                        }else{
+                            errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion FLOOR"));
+                            return null;
                         }
-                        variable_return.setValue(Double.toString(value_return));
-                        return  variable_return;
-                    }else{
-                        errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion FLOOR"));
+                    }else {
+                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","El valor de la variable es undefined _FLOOR"));
                         return null;
                     }
                 }
@@ -658,17 +701,22 @@ public class DebugRunner extends Visitor {
                 variable_return.setType(Variable.VariableType.NUMBER);
                 Variable vr_left= (Variable) i.getOperador_izquierdo().accept(this);
                 Variable vr_rigth= (Variable) i.getOperador_derecho().accept(this);
-                if(vr_left!=null && vr_rigth!=null){
-                    if(vr_left.getType().equals(Variable.VariableType.NUMBER) && vr_rigth.getType().equals(Variable.VariableType.NUMBER)){
-                        Double value_return=(Math.pow(Double.parseDouble((String)vr_left.getValue()), Double.parseDouble((String)vr_rigth.getValue())));
-                        if(value_return== Math.floor(value_return)){
-                            variable_return.setValue(Integer.toString(value_return.intValue()));
-                            return variable_return;
+                if(vr_left!= null && vr_rigth!=null){
+                    if((String)vr_left.getValue()!= Variable.VariableType.UNDEFINED.toString() && (String)vr_rigth.getValue()!= Variable.VariableType.UNDEFINED.toString()){
+                        if(vr_left.getType().equals(Variable.VariableType.NUMBER) && vr_rigth.getType().equals(Variable.VariableType.NUMBER)){
+                            Double value_return=(Math.pow(Double.parseDouble((String)vr_left.getValue()), Double.parseDouble((String)vr_rigth.getValue())));
+                            if(value_return== Math.floor(value_return)){
+                                variable_return.setValue(Integer.toString(value_return.intValue()));
+                                return variable_return;
+                            }
+                            variable_return.setValue(Double.toString(value_return));
+                            return  variable_return;
+                        }else{
+                            errorForClient.add(new ObjectErr(vr_left.getId()+""+vr_rigth.getId() ,i.getLine(),i.getColumn(),"SEMANTICO","Hay un dato que no es tipo Number, no puedes utilizar funcion POW"));
+                            return null;
                         }
-                        variable_return.setValue(Double.toString(value_return));
-                        return  variable_return;
-                    }else{
-                        errorForClient.add(new ObjectErr(vr_left.getId()+""+vr_rigth.getId() ,i.getLine(),i.getColumn(),"SEMANTICO","Hay un dato que no es tipo Number, no puedes utilizar funcion POW"));
+                    }else {
+                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","El valor de alguna variable es undefined _POW"));
                         return null;
                     }
                 }
@@ -679,16 +727,21 @@ public class DebugRunner extends Visitor {
                 variable_return.setType(Variable.VariableType.NUMBER);
                 Variable vr= (Variable) i.getOperador_izquierdo().accept(this);
                 if(vr!=null){
-                    if(vr.getType().equals(Variable.VariableType.NUMBER)){
-                        Double value_return=(Math.sqrt(Double.parseDouble((String)vr.getValue())));
-                        if(value_return== Math.floor(value_return)){
-                            variable_return.setValue(Integer.toString(value_return.intValue()));
-                            return variable_return;
+                    if((String)vr.getValue()!= Variable.VariableType.UNDEFINED.toString()){
+                        if(vr.getType().equals(Variable.VariableType.NUMBER)){
+                            Double value_return=(Math.sqrt(Double.parseDouble((String)vr.getValue())));
+                            if(value_return== Math.floor(value_return)){
+                                variable_return.setValue(Integer.toString(value_return.intValue()));
+                                return variable_return;
+                            }
+                            variable_return.setValue(Double.toString(value_return));
+                            return  variable_return;
+                        }else{
+                            errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion SQRT"));
+                            return null;
                         }
-                        variable_return.setValue(Double.toString(value_return));
-                        return  variable_return;
-                    }else{
-                        errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","el dato no es tipo Number, no puedes utilizar funcion SQRT"));
+                    }else {
+                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","El valor de la variable es undefined _SQRT"));
                         return null;
                     }
                 }
@@ -706,13 +759,18 @@ public class DebugRunner extends Visitor {
         switch (i.getType()){
             case LOWERCASE -> {
                 Variable variable=this.table.getWithId(i.getId());
-                if(variable!=null){
-                    if(variable.getType().equals(Variable.VariableType.STRING)){
-                        variable_return.setValue(((String)variable.getValue()).toLowerCase());
-                        variable_return.setType(Variable.VariableType.STRING);
-                        return variable_return;
+                if(variable!=null ){
+                    if((String)variable.getValue()!= Variable.VariableType.UNDEFINED.toString()){
+                        if(variable.getType().equals(Variable.VariableType.STRING)){
+                            variable_return.setValue(((String)variable.getValue()).toLowerCase());
+                            variable_return.setType(Variable.VariableType.STRING);
+                            return variable_return;
+                        }else{
+                            errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser STRING para metodo LOWECASE no "+variable.getType()));
+                            return null;
+                        }
                     }else{
-                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser STRING para metodo LOWECASE no "+variable.getType()));
+                        errorForClient.add(new ObjectErr(i.getId(),i.getLine(),i.getColumn(),"SEMANTICO","El valor de la variable es undefined _lowercase"));
                         return null;
                     }
                 }else{
@@ -723,12 +781,17 @@ public class DebugRunner extends Visitor {
             case UPPERCASE -> {
                 Variable variable=this.table.getWithId(i.getId());
                 if(variable!=null){
-                    if(variable.getType().equals(Variable.VariableType.STRING)){
-                        variable_return.setValue(((String)variable.getValue()).toUpperCase());
-                        variable_return.setType(Variable.VariableType.STRING);
-                        return variable_return;
-                    }else{
-                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser STRING para metodo UpperCASE no "+variable.getType()));
+                    if((String)variable.getValue()!= Variable.VariableType.UNDEFINED.toString()){
+                        if(variable.getType().equals(Variable.VariableType.STRING)){
+                            variable_return.setValue(((String)variable.getValue()).toUpperCase());
+                            variable_return.setType(Variable.VariableType.STRING);
+                            return variable_return;
+                        }else{
+                            errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser STRING para metodo UpperCASE no "+variable.getType()));
+                            return null;
+                        }
+                    }else {
+                        errorForClient.add(new ObjectErr(i.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Valor de la variable es undefined _Uppercase"));
                         return null;
                     }
                 }else{
@@ -739,12 +802,17 @@ public class DebugRunner extends Visitor {
             case LENGTH -> {
                 Variable variable=this.table.getWithId(i.getId());
                 if(variable!=null){
-                    if(variable.getType().equals(Variable.VariableType.STRING)){
-                        variable_return.setValue(Integer.toString(((String)variable.getValue()).length()));
-                        variable_return.setType(Variable.VariableType.NUMBER);
-                        return variable_return;
-                    }else{
-                        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser STRING para metodo length no "+variable.getType()));
+                    if((String)variable.getValue()!= Variable.VariableType.UNDEFINED.toString()){
+                        if(variable.getType().equals(Variable.VariableType.STRING)){
+                            variable_return.setValue(Integer.toString(((String)variable.getValue()).length()));
+                            variable_return.setType(Variable.VariableType.NUMBER);
+                            return variable_return;
+                        }else{
+                            errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser STRING para metodo length no "+variable.getType()));
+                            return null;
+                        }
+                    }else {
+                        errorForClient.add(new ObjectErr(i.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Valor de la variable es undefined _lenght"));
                         return null;
                     }
                 }else{
@@ -757,23 +825,28 @@ public class DebugRunner extends Visitor {
                 if(variable!=null){
                     Variable vr= this.table.getWithId(i.getId());
                     if(vr!=null){
-                        if(vr.getType().equals(Variable.VariableType.STRING)){
-                            if(variable.getType().equals(Variable.VariableType.NUMBER)){
-                                int r= Integer.parseInt((String)variable.getValue());
-                                if(0<= r &&r<((String) vr.getValue()).length()){
-                                    variable_return.setValue(((String)vr.getValue()).charAt(Integer.parseInt((String)variable.getValue())));
-                                    variable_return.setType(Variable.VariableType.NUMBER);
-                                    return variable_return;
+                        if((String)variable.getValue()!= Variable.VariableType.UNDEFINED.toString()){
+                            if(vr.getType().equals(Variable.VariableType.STRING)){
+                                if(variable.getType().equals(Variable.VariableType.NUMBER)){
+                                    int r= Integer.parseInt((String)variable.getValue());
+                                    if(0<= r &&r<((String) vr.getValue()).length()){
+                                        variable_return.setValue(((String)vr.getValue()).charAt(Integer.parseInt((String)variable.getValue())));
+                                        variable_return.setType(Variable.VariableType.NUMBER);
+                                        return variable_return;
+                                    }else{
+                                        errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Indice fuera de los limites -> "+(String) variable.getValue()));
+                                        return null;
+                                    }
                                 }else{
-                                    errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Indice fuera de los limites -> "+(String) variable.getValue()));
+                                    errorForClient.add(new ObjectErr(variable.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Se necesita enviar una variable numero no "+variable.getType()+ " metodo CHARAT"));
                                     return null;
                                 }
                             }else{
-                                errorForClient.add(new ObjectErr(variable.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Se necesita enviar una variable numero no "+variable.getType()+ " metodo CHARAT"));
+                                errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser String para metodo CharAt"));
                                 return null;
                             }
-                        }else{
-                            errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser String para metodo CharAt"));
+                        }else {
+                            errorForClient.add(new ObjectErr(i.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Valor de la variable es undefined _CharAt"));
                             return null;
                         }
                     }else{
@@ -790,18 +863,23 @@ public class DebugRunner extends Visitor {
                 if(variable!=null){
                     Variable vr= this.table.getWithId(i.getId());
                     if(vr!=null){
-                        if(vr.getType().equals(Variable.VariableType.STRING)){
-                            if(variable.getType().equals(Variable.VariableType.STRING)){
-                                String r= ((String)variable.getValue());
+                        if((String)variable.getValue()!= Variable.VariableType.UNDEFINED.toString()){
+                            if(vr.getType().equals(Variable.VariableType.STRING)){
+                                if(variable.getType().equals(Variable.VariableType.STRING)){
+                                    String r= ((String)variable.getValue());
                                     variable_return.setValue(((String)vr.getValue()).concat((String)variable.getValue()));
                                     variable_return.setType(Variable.VariableType.STRING);
                                     return variable_return;
+                                }else{
+                                    errorForClient.add(new ObjectErr(variable.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Se necesita enviar una variable String no "+variable.getType() +" metodo_concat"));
+                                    return null;
+                                }
                             }else{
-                                errorForClient.add(new ObjectErr(variable.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Se necesita enviar una variable String no "+variable.getType() +" metodo_concat"));
+                                errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser String para metodo CONCAT"));
                                 return null;
                             }
-                        }else{
-                            errorForClient.add(new ObjectErr(vr.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Se necesita ser String para metodo CONCAT"));
+                        }else {
+                            errorForClient.add(new ObjectErr(i.getId(),i.getLine(),i.getColumn(),"SEMANTICO","Valor de la variable es undefined _Concat"));
                             return null;
                         }
                     }else{
@@ -830,7 +908,7 @@ public class DebugRunner extends Visitor {
         /*System.out.println(ope_left.toString());
         System.out.printf(ope_rigth.toString());
         System.out.printf(i.getType().toString());*/
-        if(ope_left!=null && ope_rigth!=null ){
+        if(ope_left!=null && ope_rigth!=null && (String)ope_left.getValue()!= Variable.VariableType.UNDEFINED.toString() && (String)ope_rigth.getValue()!= Variable.VariableType.UNDEFINED.toString()){
             if(ope_left.getType().equals(ope_rigth.getType())){
                 switch (i.getType()){
                     case MAS -> {
@@ -1138,7 +1216,7 @@ public class DebugRunner extends Visitor {
                 errorForClient.add(new ObjectErr(ope_left.getType()+ " y " + ope_rigth.getType(), i.getLine(),i.getColumn(),"SEMANTICO", "Los tipos de dato son distintos y no pueden ser operados"));
                 return null;
             }
-        }else if(ope_left!=null){
+        }else if(ope_left!=null && (String)ope_left.getValue()!= Variable.VariableType.UNDEFINED.toString()){
             switch (i.getType()){
                 case MAS_MAS -> {
                     System.out.println((String) ope_left.getValue());
@@ -1202,7 +1280,7 @@ public class DebugRunner extends Visitor {
                 }
             }
         }
-       // errorForClient.add(new ObjectErr(" ", i.getLine(),i.getColumn(),"SEMANTICO", "Hubo error en la operacion, hay valores nulos"));
+       errorForClient.add(new ObjectErr(" ", i.getLine(),i.getColumn(),"SEMANTICO", "Hubo error en la operacion, hay valores nulos/undefined"));
        /* System.out.println("nulos");*/
         return null;
     }
@@ -1251,14 +1329,9 @@ public class DebugRunner extends Visitor {
                     return null;
                 }
                 variable=variable_busca;
-                System.out.println("retorne variable ya "+ variable.toString());
+                System.out.println("retorne variable "+ variable.toString());
                 return variable;
             }
-        }
-        if(i.getValue()==null){
-            variable.setValue(Variable.VariableType.UNDEFINED);
-            System.out.println("retorne undefined");
-            return variable;
         }
         System.out.println("aqui voy a retornar null");
         return null;

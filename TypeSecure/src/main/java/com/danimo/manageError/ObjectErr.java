@@ -59,12 +59,12 @@ public class ObjectErr {
     @Override
     public String toString() {
         if(value=="null" || value ==" " || value== null){
-            return " line: " + line +
-                    "column: " + column +" "+ description;
+            return "\n line: " + line +
+                    "column: " + column +" "+ description+" -> "+ type_error;
         }else{
             return "\nToken: '" + value + '\'' +
                     " line: " + line +
-                    "column: " + column +" "+ description;
+                    "column: " + column +" "+ description +" -> "+ type_error;
         }
 
     }

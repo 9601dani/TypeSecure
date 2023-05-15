@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 public class Main {
     public static int CONTADOR=0;
+    public static ArrayList<String> view_console= new ArrayList<>();
     public static void main(String[] args) {
         System.out.println("Hello world!");
         EditorVIew editor= new EditorVIew();
