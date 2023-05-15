@@ -12,6 +12,7 @@ public class MethodString extends Instruccion {
         this.id = id;
         this.type = type;
         this.operador_derecho = operador_derecho;
+
     }
 
     @Override

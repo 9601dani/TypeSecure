@@ -93,7 +93,7 @@ public class Runner extends Visitor{
     }
 
     @Override
-    public Instruccion visit(Return i) {
+    public Variable visit(Return i) {
         return null;
     }
 
@@ -119,19 +119,4 @@ public class Runner extends Visitor{
     public void setTable(final TablaSimbolos table) {
         this.table = table;
     }
-/*    private Boolean verificarOperaciones(Variable left, Variable rigth){
-        if(left.getType().equals(Variable.VariableType.STRING)){
-            return false;
-        }
-        if(left.type=== VariableType.BOOLEAN){
-            return false;
-        }
-        if(right.type=== VariableType.TEXT){
-            return false;
-        }
-        if(right.type=== VariableType.BOOLEAN){
-            return false;
-        }
-        return true;
-    }*/
 }

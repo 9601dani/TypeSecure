@@ -243,16 +243,16 @@ public class DebugRunner extends Visitor {
                                 variable_return.setId(variable.getId());
                                 valor= valor.replace(" ","");
                                 valor=valor.replace("n","");
-                                if(valor.equalsIgnoreCase(" ")){
+                                if(valor.equalsIgnoreCase("")){
                                     variable_return.setValue("0n");
                                     return variable_return;
                                 }
                                 // error al castear
-                                int result=Integer.parseInt((String)((String) variable.getValue()).replace("n",""));
-                                if(result==-1){
+                               /* int result=Integer.parseInt((String)((String) variable.getValue()).replace("n",""));*/
+                                /*if(result==-1){
                                     new Exception("error");
-                                }
-                                variable_return.setValue(Integer.toString(result)+"n");
+                                }*/
+                                variable_return.setValue((valor)+"n");
                                 return variable_return;
                             }
                         }
@@ -278,11 +278,12 @@ public class DebugRunner extends Visitor {
             ele.accept(this);
         });*/
         ArrayList<Variable> arrayDatos= new ArrayList<>();
-        i.getInstruccions().forEach(ele -> {
-            Variable txts = (Variable) ele.accept(this);
-            if(txts!=null){
-                String value;
-                System.out.println("Variable-> "+txts.toString());
+        if(i.getInstruccions()!=null){
+            i.getInstruccions().forEach(instrucciones_console -> {
+                Variable txts = (Variable) instrucciones_console.accept(this);
+                if(txts!=null){
+                    String value;
+                    //  System.out.println("Variable-> "+txts.toString());
             /*if(txts.getValue().equals(Variable.VariableType.NUMBER)){
                 value = Integer.toString((int)txts.getValue());
             }else{
@@ -292,15 +293,23 @@ public class DebugRunner extends Visitor {
             if (value != null && !"undefined".equals(value) && !"UNDEFINED".equals(value)) {
                 arrayDatos.add(txts);
             }*/
-                arrayDatos.add(txts);
+                    arrayDatos.add(txts);
+                }
+            });
+            String txt="";
+            for(int p=0; p<arrayDatos.size();p++){
+                txt+=(String)  arrayDatos.get(p).getValue();
             }
-       });
-        String txt="";
-        for(int p=0; p<arrayDatos.size();p++){
-            txt+=(String)  arrayDatos.get(p).getValue();
+            if(txt.equals(null)){
+                errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"Semantico","El valor es nulo en console"));
+                return null;
+            }
+            System.out.println("CONSOLE \n" + txt);
+            return null;
+        }else{
+         errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"Semantico","El valor es nulo en console"));
+         return null;
         }
-        System.out.println("CONSOLE \n" + txt);
-        return null;
     }
 
     @Override
@@ -310,19 +319,21 @@ public class DebugRunner extends Visitor {
                 i.getAsignaciones().forEach(ele->{
                     Variable vr1= new Variable();
                     vr1.setType_modi(i.getType_modi());
-                    Variable asigment=(Variable) ele.accept(this);
-                    if(asigment!= null){
-                        if(i.getType_modi().equals(Variable.TypeV.CONST) && asigment.getValue().equals("undefined")){
-                            errorForClient.add(new ObjectErr(asigment.getId(), i.getLine(),i.getColumn(),"SEMANTICO", "Una variable CONST debe tener un valor asignado"));
+                    if(ele!=null){
+                        Variable asigment=(Variable) ele.accept(this);
+                        if(asigment!= null){
+                            if(i.getType_modi().equals(Variable.TypeV.CONST) && asigment.getValue().equals("undefined")){
+                                errorForClient.add(new ObjectErr(asigment.getId(), i.getLine(),i.getColumn(),"SEMANTICO", "Una variable CONST debe tener un valor asignado"));
+                            }else{
+                                vr1.setId(asigment.getId());
+                                vr1.setType(asigment.getType());
+                                vr1.setValue(asigment.getValue());
+                                this.table.nuevo(vr1);
+                            }
                         }else{
-                            vr1.setId(asigment.getId());
-                            vr1.setType(asigment.getType());
-                            vr1.setValue(asigment.getValue());
-                            this.table.nuevo(vr1);
+                            //errorForClient.add(new ObjectErr(" ", i.getLine(),i.getColumn(),"SEMANTICO", "No se pudo asignar un valor"));
+                            System.out.println("la asignacion en nula");
                         }
-                    }else{
-                        //errorForClient.add(new ObjectErr(" ", i.getLine(),i.getColumn(),"SEMANTICO", "No se pudo asignar un valor"));
-                        System.out.println("la asignacion en nula");
                     }
                 });
             }else{
@@ -381,21 +392,60 @@ public class DebugRunner extends Visitor {
 
     @Override
     public Instruccion visit(ForState i) {
-       /* System.out.println("DEBUG FOR");
-        i.getDeclaraciones().forEach(ele->{
-            ele.accept(this);
+        System.out.println("DEBUG FOR");
+        TablaSimbolos tmp= new TablaSimbolos(this.table);
+        this.table= tmp;
+        /*i.getDeclaraciones().accept(this);*/
+        i.getDeclaraciones().forEach(declaraciones_for->{
+            declaraciones_for.accept(this);
+            System.out.println(declaraciones_for.getClass());
         });
         i.getCondition().accept(this);
         i.getSalto().accept(this);
-        i.getInstruccions().forEach(ele->{
-            ele.accept(this);
-        });*/
+        if(i.getInstruccions()!=null){
+            i.getInstruccions().forEach(instrucciones_for->{
+                instrucciones_for.accept(this);
+            });
+        }
+        this.table= this.table.getParent();
         return null;
     }
 
     @Override
     public Instruccion visit(Function i) {
-        /*System.out.println("DEBUG FUNCTION");*/
+        System.out.println("DEBUG FUNCTION");
+        this.table= new TablaSimbolos(this.table);
+        ArrayList<Variable> vrs= new ArrayList<>();
+        if(i.getParametros()!=null){
+            i.getParametros().forEach(parametros_fun->{
+                /*if(parametros_fun==null){
+                    this.table.nuevo(parametros_fun.accept(this));
+                }*/
+
+            });
+        }
+        if(i.getInstruccions()!=null){
+            System.out.println("no es nulo");
+            vrs= getVariablesReturn(i.getInstruccions(), new ArrayList<>());
+        }
+        vrs.forEach(System.out::println);
+        this.table=this.table.getParent();
+
+/*        TablaSimbolos tabla_tmp=  new TablaSimbolos(this.table);
+        this.table= tabla_tmp;
+        if(i.getInstruccions()!=null){
+            for(Instruccion ele: i.getInstruccions()){
+                i.accept(this);
+                return null;
+            }
+            return null;
+        }
+        this.table=this.table.getParent();*/
+        /*function sayHello2(name: string): void {
+	const greeting = 'Hello ' + name + '!';
+	console.log(greeting);
+}
+*/
         return null;
     }
 
@@ -412,13 +462,19 @@ public class DebugRunner extends Visitor {
             }
         }*/
         try{
+
             i.getInstruccion().accept(this);
             /*        TablaSimbolos tb= this.table;*/
             TablaSimbolos tmp_if= new TablaSimbolos(this.table);
             this.table=tmp_if;
-            i.getBloque_verdadero().forEach(ele->{
+            for(Instruccion ele: i.getBloque_verdadero()){
                 ele.accept(this);
-            });
+                /*if(ele.getClass().equals(Break.class)){
+                    Break eleme= new Break(i.getLine(), i.getColumn());
+                    return(Instruccion) eleme;
+                }
+                return ele;*/
+            }
             System.out.println("IF->\n"+this.table);
             this.table= this.table.getParent();
             TablaSimbolos tmp_else= new TablaSimbolos(this.table);
@@ -996,7 +1052,7 @@ public class DebugRunner extends Visitor {
                     case DOBLE_IGUAL -> {
                         variable_return.setType(Variable.VariableType.BOOLEAN);
                         if(ope_left.getType().equals(Variable.VariableType.STRING)){
-                            Boolean result=((String)ope_left.getValue())==((String)ope_rigth.getValue());
+                            Boolean result=((String)ope_left.getValue()).equals((String)ope_rigth.getValue());
                             variable_return.setValue(result.toString());
                             return variable_return;
                         } else if (ope_left.getType().equals(Variable.VariableType.NUMBER)) {
@@ -1100,8 +1156,12 @@ public class DebugRunner extends Visitor {
                                 Variable vr=this.table.getWithId(ope_left.getId());
                                 Double tmp= Double.parseDouble((String)ope_left.getValue());
                                 tmp++;
-                                vr.setValue(Double.toString(tmp));
                                 variable_return.setType(Variable.VariableType.NUMBER);
+                                if(tmp==Math.floor(tmp)){
+                                    vr.setValue(Integer.toString(tmp.intValue()));
+                                    return variable_return;
+                                }
+                                vr.setValue(Double.toString(tmp));
                                 return  variable_return;
                             }
                         }
@@ -1126,8 +1186,12 @@ public class DebugRunner extends Visitor {
                                 Variable vr=this.table.getWithId(ope_left.getId());
                                 Double tmp= Double.parseDouble((String)ope_left.getValue());
                                 tmp--;
-                                vr.setValue(Double.toString(tmp));
                                 variable_return.setType(Variable.VariableType.NUMBER);
+                                if(tmp==Math.floor(tmp)){
+                                    vr.setValue(Integer.toString(tmp.intValue()));
+                                    return  variable_return;
+                                }
+                                vr.setValue(Double.toString(tmp));
                                 return  variable_return;
                             }
                         }
@@ -1146,7 +1210,10 @@ public class DebugRunner extends Visitor {
     @Override
     public Variable visit(Parametro i) {
         /*System.out.println("DEBUG PARAMETRO");*/
-        return null;
+        Variable vr= new Variable();
+        vr.setId(i.getId());
+        vr.setType(i.getType());
+        return vr;
     }
 
     @Override
@@ -1184,6 +1251,7 @@ public class DebugRunner extends Visitor {
                     return null;
                 }
                 variable=variable_busca;
+                System.out.println("retorne variable ya "+ variable.toString());
                 return variable;
             }
         }
@@ -1207,18 +1275,18 @@ public class DebugRunner extends Visitor {
             Variable vr=(Variable) i.getOperation().accept(this);
             TablaSimbolos tmp= new TablaSimbolos(this.table);
             this.table=tmp;
-/*        for(Instruccion ele: i.getInstruccions()){
-            if(ele.getClass().equals(Break.class)){
+            //este metodo es para ver el break;
+        /*for(Instruccion ele: i.getInstruccions()){
+            Instruccion inst=(Instruccion) ele.accept(this);
+            if(inst.getClass().equals(Break.class)){
+                System.out.println("recibi un break, en el while");
                 break;
             }
-            ele.accept(this);
         }*/
             i.getInstruccions().forEach(ele->{
-                if(ele.getClass().equals(Break.class)){
-
-                }
                 ele.accept(this);
-
+                System.out.println("while");
+                System.out.println(ele.getClass());
             });
             this.table=this.table.getParent();
             return null;
@@ -1234,7 +1302,20 @@ public class DebugRunner extends Visitor {
     }
 
     @Override
-    public Instruccion visit(Return i) {
+    public Variable visit(Return i) {
+        if(this.table.getParent()==null){
+            errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO", "El return solamente se usa dentro de ciclos/funciones"));
+        }
+        if(i.getInstruccion()!=null){
+            Variable vr= (Variable) i.getInstruccion().accept(this);
+            if(vr==null){
+                errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO", "Error en la oepracion del Return "));
+                return null;
+            }else {
+                return vr;
+            }
+
+        }
         return null;
     }
 
@@ -1245,12 +1326,30 @@ public class DebugRunner extends Visitor {
 
     @Override
     public Instruccion visit(Break i) {
-        return null;
+        //si si, literalmente hay que hacer un break
+        if(this.table.getParent()!= null){
+            System.out.println("le retorne una instruccion");
+            return i;
+        }
+        errorForClient.add(new ObjectErr("BREAK",i.getLine(), i.getColumn(),"SEMANTICO","Solamente puedes usar break dentro de un ciclo "));
+        return i;
     }
 
     @Override
     public Variable visit(Call i) {
-        return null;
+        System.out.println("ENCONTRE UN CALL");
+        Variable vr= new Variable();
+        if(i.getAsignaciones()!=null){
+            i.getAsignaciones().forEach(asignaciones_call->{
+                asignaciones_call.accept(this);
+            });
+            System.out.println("aqui mandare algo");
+            vr.setId("yo mande");
+            vr.setValue(2);
+            vr.setType(Variable.VariableType.NUMBER);
+            return vr;
+        }
+        return vr;
     }
 
     public TablaSimbolos getTable() {
@@ -1276,5 +1375,40 @@ public class DebugRunner extends Visitor {
         return "DebugRunner{" +
                 "table=" + table +
                 '}';
+    }
+    public ArrayList<Variable> getVariablesReturn(ArrayList<Instruccion> f, ArrayList<Variable> vrs){
+        if(f!=null){
+            for(Instruccion instr: f){
+                if(instr.getClass().equals(While.class)){
+                    getVariablesReturn(((While) instr).getInstruccions(),vrs);
+                }else if(instr.getClass().equals(DoWhile.class)){
+                    getVariablesReturn(((DoWhile) instr).getInstruccions(),vrs);
+                } else if (instr.getClass().equals(ForState.class)) {
+                    getVariablesReturn(((ForState)instr).getInstruccions(),vrs);
+                } else if (instr.getClass().equals(IfState.class)) {
+                    if(((IfState) instr).getBloque_verdadero()!=null){
+                        getVariablesReturn(((IfState) instr).getBloque_verdadero(),vrs);
+                        System.out.println("dnaiel1");
+                    }
+                    if (((IfState) instr).getBloque_falso()!=null) {
+                        if(((IfState) instr).getBloque_falso() instanceof ElseState pnElse){
+                            getVariablesReturn(pnElse.getInstruccions(),vrs);
+                        }else if(((IfState) instr).getBloque_falso().getClass().equals(IfState.class)){
+                            System.out.println("dnaiel3");
+                            getVariablesReturn(((IfState) instr).getBloque_verdadero(),vrs);
+                        }
+                    }
+                } else if (instr.getClass().equals(ElseState.class)) {
+                    getVariablesReturn(((ElseState) instr).getInstruccions(),vrs);
+                } else if (instr.getClass().equals(Return.class)) {
+                    Variable vr_return= new Variable();
+                    vr_return= (Variable) ((Return) instr).getInstruccion().accept(this);
+                    vrs.add(vr_return);
+                }else {
+                    instr.accept(this);
+                }
+            }
+        }
+        return vrs;
     }
 }

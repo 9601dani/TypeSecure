@@ -11,5 +11,16 @@ public class Main {
         System.out.println("Hello world!");
         EditorVIew editor= new EditorVIew();
         editor.setVisible(true);
+        /*String greeting="Hello"+ " world";
+        String message2 = "El resultado es: " + greeting.equals( "Hello world");
+        System.out.println(message2);*/
+        int variable=3;
+        while(variable>0){
+            if(variable==3){
+                break;
+            }
+            variable--;
+        }
+        System.out.println(variable);
     }
 }

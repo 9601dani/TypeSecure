@@ -118,11 +118,11 @@ MATH_ABS,MATH_CEIL,MATH_COS,MATH_SIN,MATH_TAN,MATH_EXP,MATH_FLOOR,MATH_POW,MATH_
 SYM,ERROR,MOD,MAS_MAS,MENOS_MENOS, L_LLAVE, R_LLAVE;
 nonterminal instruccion,type,type_f,settear,a,method_string,method_math,type_method_string,parame,
             b,c,d,e,f,g,h,i,if_pro,while_pro,console_pro,else_pro,for_pro,continue_pro,break_pro,return_pro
-            , do_while_pro,sumadores_pro,assignacion_pro,assig_pro,funtion_pro, call_funtion;
+            , do_while_pro,sumadores_pro,assignacion_pro,assig_pro,funtion_pro, call_funtion, declare_for;
 nonterminal Ast inic;
 nonterminal  Declare declare_pro;
 nonterminal ArrayList<Parametro> parametros;
-nonterminal ArrayList<Instruccion> instrucciones, declare,expr;
+nonterminal ArrayList<Instruccion> instrucciones, declare,expr,expr2,call_f,array_assig_pro, recursividad;
 start with inic;
 
 inic ::=
@@ -161,12 +161,12 @@ instruccion ::=
 				|   while_pro:pro   {:RESULT = pro;:}
 				|   sumadores_pro:pro PUNTO_COMA    {:RESULT = pro;:}
 				|   funtion_pro:pro {:RESULT = pro;:}
-				|   call_funtion:pro PUNTO_COMA     {:RESULT = pro;:}
+				|   call_funtion:pro PUNTO_COMA      {:RESULT = pro;:}
 				|   assig_pro:pro PUNTO_COMA {:RESULT= pro;:}
 				|   return_pro:pro PUNTO_COMA {:RESULT= pro;:}
 				|   continue_pro:pro PUNTO_COMA {:RESULT=pro;:}
 				|   break_pro:pro   PUNTO_COMA {:RESULT=pro;:}
-				| error PUNTO_COMA
+				|   error PUNTO_COMA
 ;
 
 declare_pro ::=
@@ -174,6 +174,14 @@ declare_pro ::=
                 {:
                             RESULT = new Declare(((Token)a).getLine(),((Token)a).getColumn(),returnTypeV(((Token)a).getLexeme()), (ArrayList<Instruccion>)b);
                 :}
+;
+declare_for::=
+                type_f:a assignacion_pro:b
+{:
+ArrayList<Instruccion> array= new ArrayList<>();
+array.add((Instruccion)b);
+RESULT = new Declare(((Token)a).getLine(),((Token)a).getColumn(),returnTypeV(((Token)a).getLexeme()), array);
+;:}
 ;
 declare ::= declare:c COMA assignacion_pro:b
                {:
@@ -203,6 +211,18 @@ assignacion_pro ::=
 			    :}
 			|   LITERAL:id IGUAL call_funtion
 ;
+array_assig_pro::=
+        array_assig_pro:prod COMA assig_pro:prod1
+        {:
+        ((ArrayList<Instruccion>)prod).add((Instruccion)prod1);
+        RESULT= prod;
+        :}
+        | assig_pro:prod
+        {:
+        RESULT= new ArrayList<Instruccion>();
+        RESULT.add((Instruccion)prod);
+        :}
+;
 assig_pro ::=
 			|   LITERAL:id IGUAL a:pro1
 			    {:
@@ -228,6 +248,8 @@ type_f ::=	CONST:a {:RESULT = ((Token)a);:}
 console_pro ::=
             CONSOLE:pro L_PARENT expr:pro2 R_PARENT PUNTO_COMA
             {:RESULT = new ConsoleLog(pro.getLine(), pro.getColumn(),(ArrayList<Instruccion>)pro2 );:}
+          | CONSOLE:pro L_PARENT instrucciones:pro2 R_PARENT PUNTO_COMA
+            {:RESULT = new ConsoleLog(pro.getLine(), pro.getColumn(),(ArrayList<Instruccion>)pro2 );:}
 ;
 expr ::=
         expr:prod COMA a:prod1
@@ -236,6 +258,18 @@ expr ::=
         RESULT= prod;
         :}
         | a:prod
+        {:
+        RESULT= new ArrayList<Instruccion>();
+        RESULT.add((Instruccion)prod);
+        :}
+;
+expr2 ::=
+        expr2:prod COMA instruccion:prod1
+        {:
+        ((ArrayList<Instruccion>)prod).add((Instruccion)prod1);
+        RESULT= prod;
+        :}
+        | instruccion:prod
         {:
         RESULT= new ArrayList<Instruccion>();
         RESULT.add((Instruccion)prod);
@@ -255,10 +289,20 @@ else_pro ::=
 ;
 
 for_pro ::=
-           FOR L_PARENT declare PUNTO_COMA a PUNTO_COMA sumadores_pro  R_PARENT L_LLAVE instrucciones R_LLAVE
-         |  FOR L_PARENT declare PUNTO_COMA a PUNTO_COMA sumadores_pro  R_PARENT L_LLAVE  R_LLAVE
-         |  FOR L_PARENT declare_pro PUNTO_COMA a PUNTO_COMA sumadores_pro  R_PARENT L_LLAVE instrucciones R_LLAVE
-         |  FOR L_PARENT declare_pro PUNTO_COMA a PUNTO_COMA sumadores_pro  R_PARENT L_LLAVE  R_LLAVE
+           FOR:id L_PARENT declare_pro:decla PUNTO_COMA a:compare PUNTO_COMA sumadores_pro:incre  R_PARENT L_LLAVE instrucciones:instr R_LLAVE
+{:  ArrayList<Instruccion> array= new ArrayList<>();
+    array.add((Instruccion)decla);
+    RESULT= new ForState(((Token)id).getLine(), ((Token)id).getColumn(),array,(Instruccion)compare,(Instruccion)incre,(ArrayList<Instruccion>)instr);
+:}
+         |  FOR:id L_PARENT declare_pro:decla PUNTO_COMA a:compare PUNTO_COMA sumadores_pro:incre  R_PARENT L_LLAVE  R_LLAVE
+{:  ArrayList<Instruccion> array= new ArrayList<>();
+    array.add((Instruccion)decla);
+    RESULT= new ForState(((Token)id).getLine(), ((Token)id).getColumn(),array,(Instruccion)compare,(Instruccion)incre,null);
+:}
+         |  FOR:id L_PARENT array_assig_pro:decla PUNTO_COMA a:compare PUNTO_COMA sumadores_pro:incre  R_PARENT L_LLAVE instrucciones:instr R_LLAVE
+{:RESULT= new ForState(((Token)id).getLine(), ((Token)id).getColumn(),(ArrayList<Instruccion>)decla,(Instruccion)compare,(Instruccion)incre,(ArrayList<Instruccion>)instr);:}
+         |  FOR:id L_PARENT array_assig_pro:decla PUNTO_COMA a:compare PUNTO_COMA sumadores_pro:incre  R_PARENT L_LLAVE  R_LLAVE
+{:RESULT= new ForState(((Token)id).getLine(), ((Token)id).getColumn(),(ArrayList<Instruccion>)decla,(Instruccion)compare,(Instruccion)incre,null);:}
 ;
 while_pro ::=
             WHILE:prod L_PARENT a:prod3 R_PARENT L_LLAVE instrucciones:prod6 R_LLAVE
@@ -279,6 +323,8 @@ funtion_pro ::=
 {:RESULT= new Function(((Token)prod).getLine(), ((Token)prod).getColumn(),((Token)id).getLexeme(),(ArrayList<Parametro>)param,(ArrayList<Instruccion>)prod1, (Variable.VariableType)pro_tipo);:}
                |  FUNCTION:prod LITERAL:id L_PARENT parametros:param R_PARENT  L_LLAVE instrucciones:prod1 R_LLAVE
 {:RESULT= new Function(((Token)prod).getLine(), ((Token)prod).getColumn(),((Token)id).getLexeme(),(ArrayList<Parametro>)param,(ArrayList<Instruccion>)prod1, Variable.VariableType.VOID);:}
+               |  FUNCTION:prod LITERAL:id L_PARENT parametros:param R_PARENT  L_LLAVE R_LLAVE
+{:RESULT= new Function(((Token)prod).getLine(), ((Token)prod).getColumn(),((Token)id).getLexeme(),(ArrayList<Parametro>)param,null, Variable.VariableType.VOID);:}
 ;
 parametros ::=
               parametros:prod COMA parame:prod1
@@ -297,10 +343,22 @@ parame ::=
             |
 ;
 call_funtion::=
-                LITERAL:id L_PARENT assignacion_pro:asig R_PARENT
+                LITERAL:id L_PARENT call_f:asig R_PARENT
 {:RESULT= new Call(((Token)id).getLine(),((Token)id).getColumn(),((Token)id).getLexeme(), (ArrayList<Instruccion>)asig);:}
               |  LITERAL:id L_PARENT R_PARENT
 {:RESULT= new Call(((Token)id).getLine(),((Token)id).getColumn(),((Token)id).getLexeme(), null);:}
+;
+call_f::=
+         call_f:c COMA a:b
+         {:
+                         ((ArrayList<Instruccion>)c).add((Instruccion)b);
+                         RESULT= c;
+         :}
+       | a:b
+          {:
+         		         RESULT= new ArrayList<Instruccion>();
+                          RESULT.add((Value)b);
+         :}
 ;
 sumadores_pro::=
             LITERAL:id MAS_MAS
@@ -413,4 +471,5 @@ i ::=  BIG_INT:id {: RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme
     | TRUE:id        {:RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.BOOLEAN); :}
     | LITERAL:id     {:RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.LITERAL); :}
     | L_PARENT a:id R_PARENT {:RESULT= id; :}
+/*    | call_funtion:pp {:RESULT= pp;:}*/
 ;
