@@ -17,5 +17,7 @@ public enum OperationType {
         DIVIDE,
         MOD,
         MAS_MAS,
-        MENOS_MENOS
+        MENOS_MENOS,
+        MAS_UNARIO,
+        MENOS_UNARIO
 }

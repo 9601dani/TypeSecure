@@ -248,7 +248,7 @@ type_f ::=	CONST:a {:RESULT = ((Token)a);:}
 console_pro ::=
             CONSOLE:pro L_PARENT expr:pro2 R_PARENT PUNTO_COMA
             {:RESULT = new ConsoleLog(pro.getLine(), pro.getColumn(),(ArrayList<Instruccion>)pro2 );:}
-          | CONSOLE:pro L_PARENT instrucciones:pro2 R_PARENT PUNTO_COMA
+          | CONSOLE:pro L_PARENT call_funtion:pro2 R_PARENT PUNTO_COMA
             {:RESULT = new ConsoleLog(pro.getLine(), pro.getColumn(),(ArrayList<Instruccion>)pro2 );:}
 ;
 expr ::=
@@ -258,18 +258,6 @@ expr ::=
         RESULT= prod;
         :}
         | a:prod
-        {:
-        RESULT= new ArrayList<Instruccion>();
-        RESULT.add((Instruccion)prod);
-        :}
-;
-expr2 ::=
-        expr2:prod COMA instruccion:prod1
-        {:
-        ((ArrayList<Instruccion>)prod).add((Instruccion)prod1);
-        RESULT= prod;
-        :}
-        | instruccion:prod
         {:
         RESULT= new ArrayList<Instruccion>();
         RESULT.add((Instruccion)prod);
@@ -459,8 +447,10 @@ type_method_string ::=
                  |  LENGTH :prod        {:RESULT=((Token)prod);:}
 ;
 
-h ::= MENOS i:pro1 {:RESULT =pro1;:}
-  | MAS i:pro1      {:RESULT= pro1;:}
+h ::= MENOS i:pro1
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.MENOS_UNARIO,(Instruccion)pro1,(Instruccion)pro1);:}
+  | MAS i:pro1
+{:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.MAS_UNARIO,(Instruccion)pro1,(Instruccion)pro1);:}
   | i:pro1   {:RESULT=pro1;:}
 ;
 i ::=  BIG_INT:id {: RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.BIG_INT);:}
@@ -470,6 +460,7 @@ i ::=  BIG_INT:id {: RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme
     | FALSE:id       {:RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.BOOLEAN); :}
     | TRUE:id        {:RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.BOOLEAN); :}
     | LITERAL:id     {:RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.LITERAL); :}
+/*    | call_funtion:pro {:RESULT=pro;:}*/
     | L_PARENT a:id R_PARENT {:RESULT= id; :}
 /*    | call_funtion:pp {:RESULT= pp;:}*/
 ;

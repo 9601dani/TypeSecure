@@ -231,7 +231,12 @@ public class DebugRunner extends Visitor {
                                 Double result = Double.parseDouble((String)variable.getValue());
                                 variable_return.setType(Variable.VariableType.BIGINT);
                                 variable_return.setId(variable.getId());
+                                System.out.println("-----------------"+result);
                                 if(result== Math.floor(result)){
+                                    if(result<0){
+                                        variable_return.setValue(String.valueOf(result.intValue())+"n" );
+                                        return variable_return;
+                                    }
                                     variable_return.setValue(String.valueOf(result.intValue())+"n" );
                                     return variable_return;
                                 }
@@ -303,8 +308,10 @@ public class DebugRunner extends Visitor {
                 }
             });
             String txt="";
-            for(int p=0; p<arrayDatos.size();p++){
-                txt+=(String)  arrayDatos.get(p).getValue();
+            if(arrayDatos.size()>=1){
+                for(int p=0; p<arrayDatos.size();p++){
+                    txt+=(String)  arrayDatos.get(p).getValue();
+                }
             }
             if(txt.equals(null)){
                 errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"Semantico","El valor es nulo en console"));
@@ -1198,6 +1205,56 @@ public class DebugRunner extends Visitor {
                             return variable_return;
                         }else{
                             errorForClient.add(new ObjectErr(ope_left.getType().toString(), i.getLine(),i.getColumn(),"SEMANTICO", "El tipo no es operable con 'NOT'"));
+                            return null;
+                        }
+                    }
+                    case MAS_UNARIO -> {
+                        if(ope_left.getType().equals(Variable.VariableType.NUMBER) || ope_left.getType().equals(Variable.VariableType.BIGINT)){
+                            if (ope_left.getType().equals(Variable.VariableType.NUMBER)) {
+                                Double result=Double.parseDouble((String) ope_left.getValue());
+                                variable_return.setType(Variable.VariableType.NUMBER);
+                                if(result== Math.floor(result)){
+                                    variable_return.setValue(String.valueOf(result.intValue()) );
+                                    return variable_return;
+                                }
+                                variable_return.setValue(String.valueOf(result) );
+                                return variable_return;
+                            } else if (ope_left.getType().equals(Variable.VariableType.BIGINT)) {
+                                int result= extractNumber((String) ope_left.getValue());
+                                variable_return.setValue(Integer.toString(result)+"n");
+                                variable_return.setType(Variable.VariableType.BIGINT);
+                                return variable_return;
+                            }else{
+                                errorForClient.add(new ObjectErr(ope_left.getType().toString(), i.getLine(),i.getColumn(),"SEMANTICO", "El tipo no es operable aritmeticamente"));
+                                return null;
+                            }
+                        }else{
+                            errorForClient.add(new ObjectErr(ope_left.getType().toString(), i.getLine(),i.getColumn(),"SEMANTICO", "El tipo no es operable aritmeticamente"));
+                            return null;
+                        }
+                    }
+                    case MENOS_UNARIO -> {
+                        if(ope_left.getType().equals(Variable.VariableType.NUMBER) || ope_left.getType().equals(Variable.VariableType.BIGINT)){
+                            if (ope_left.getType().equals(Variable.VariableType.NUMBER)) {
+                                Double result=Double.parseDouble((String) ope_left.getValue());
+                                variable_return.setType(Variable.VariableType.NUMBER);
+                                if(result== Math.floor(result)){
+                                    variable_return.setValue(String.valueOf("-"+result.intValue()) );
+                                    return variable_return;
+                                }
+                                variable_return.setValue("-"+String.valueOf(result) );
+                                return variable_return;
+                            } else if (ope_left.getType().equals(Variable.VariableType.BIGINT)) {
+                                int result= extractNumber((String) ope_left.getValue());
+                                variable_return.setValue("-"+Integer.toString(result)+"n");
+                                variable_return.setType(Variable.VariableType.BIGINT);
+                                return variable_return;
+                            }else{
+                                errorForClient.add(new ObjectErr(ope_left.getType().toString(), i.getLine(),i.getColumn(),"SEMANTICO", "El tipo no es operable aritmeticamente"));
+                                return null;
+                            }
+                        }else{
+                            errorForClient.add(new ObjectErr(ope_left.getType().toString(), i.getLine(),i.getColumn(),"SEMANTICO", "El tipo no es operable aritmeticamente"));
                             return null;
                         }
                     }

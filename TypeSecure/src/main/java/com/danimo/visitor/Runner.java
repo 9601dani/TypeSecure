@@ -133,7 +133,6 @@ public class Runner extends Visitor{
                                 }
                                 Double result=Double.parseDouble((String)variable.getValue());
                                 if(result== Math.floor(result)){
-                                    System.out.println("desde cast");
                                     variable_return.setValue(String.valueOf(result.intValue()) );
                                     /* System.out.println(variable_return.getValue());*/
                                     return variable_return;
@@ -228,7 +227,12 @@ public class Runner extends Visitor{
                                 Double result = Double.parseDouble((String)variable.getValue());
                                 variable_return.setType(Variable.VariableType.BIGINT);
                                 variable_return.setId(variable.getId());
+                                System.out.println("-----------------"+result);
                                 if(result== Math.floor(result)){
+                                    if(result<0){
+                                        variable_return.setValue(String.valueOf("-"+result.intValue())+"n" );
+                                        return variable_return;
+                                    }
                                     variable_return.setValue(String.valueOf(result.intValue())+"n" );
                                     return variable_return;
                                 }
@@ -264,11 +268,9 @@ public class Runner extends Visitor{
         }else{
             if(variable!=null){
                 errorForClient.add(new ObjectErr(variable.getId(),i.getLine(), i.getColumn(), "SEMANTICO","Variable no definida/undefined"));
-                System.out.println("casteo null");
                 return null;
             }
             errorForClient.add(new ObjectErr(null,i.getLine(), i.getColumn(), "SEMANTICO","Variable no definida/undefined"));
-            System.out.println("casteo null");
             return null;
         }
         return null;
