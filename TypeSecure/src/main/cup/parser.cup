@@ -209,7 +209,6 @@ assignacion_pro ::=
 			    {:
                 RESULT = new Assingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),Variable.VariableType.DEFINIRLA, (Instruccion) pro1);
 			    :}
-			|   LITERAL:id IGUAL call_funtion
 ;
 array_assig_pro::=
         array_assig_pro:prod COMA assig_pro:prod1
@@ -228,7 +227,6 @@ assig_pro ::=
 			    {:
                 RESULT = new OnlyAssingment(((Token)id).getLine(),((Token)id).getColumn(), id.getLexeme(),Variable.VariableType.DEFINIRLA, (Instruccion) pro1);
 			    :}
-			|   LITERAL:id IGUAL call_funtion
 ;
 
 type ::=  T_NUMBER {: RESULT= Variable.VariableType.NUMBER;:}
@@ -248,8 +246,8 @@ type_f ::=	CONST:a {:RESULT = ((Token)a);:}
 console_pro ::=
             CONSOLE:pro L_PARENT expr:pro2 R_PARENT PUNTO_COMA
             {:RESULT = new ConsoleLog(pro.getLine(), pro.getColumn(),(ArrayList<Instruccion>)pro2 );:}
-          | CONSOLE:pro L_PARENT call_funtion:pro2 R_PARENT PUNTO_COMA
-            {:RESULT = new ConsoleLog(pro.getLine(), pro.getColumn(),(ArrayList<Instruccion>)pro2 );:}
+         /* | CONSOLE:pro L_PARENT call_funtion:pro2 expr2 PUNTO_COMA
+            {:RESULT = new ConsoleLog(pro.getLine(), pro.getColumn(),(ArrayList<Instruccion>)pro2 );:}*/
 ;
 expr ::=
         expr:prod COMA a:prod1
@@ -451,6 +449,7 @@ h ::= MENOS i:pro1
 {:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.MENOS_UNARIO,(Instruccion)pro1,(Instruccion)pro1);:}
   | MAS i:pro1
 {:RESULT = new OperacionBinaria(((Instruccion)pro1).getLine(),((Instruccion)pro1).getColumn(),OperationType.MAS_UNARIO,(Instruccion)pro1,(Instruccion)pro1);:}
+  | call_funtion:pro {:RESULT = pro;:}
   | i:pro1   {:RESULT=pro1;:}
 ;
 i ::=  BIG_INT:id {: RESULT= new Value(id.getLine(),id.getColumn(), id.getLexeme(),Value.ValueType.BIG_INT);:}

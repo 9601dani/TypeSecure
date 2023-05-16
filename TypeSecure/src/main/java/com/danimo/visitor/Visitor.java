@@ -12,7 +12,7 @@ public abstract class Visitor {
     public abstract Instruccion visit(DoWhile i);
     public abstract Instruccion visit(ElseState i);
     public abstract Instruccion visit(ForState i);
-    public abstract Instruccion visit(Function i);
+    public abstract Variable visit(Function i);
     public abstract Instruccion visit(IfState i);
     public abstract Variable visit(MethodMath i);
     public abstract Variable visit(MethodString i);

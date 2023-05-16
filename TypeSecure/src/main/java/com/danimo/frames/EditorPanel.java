@@ -135,7 +135,7 @@ public class EditorPanel extends javax.swing.JPanel {
         String texto= jTextArea1.getText();
         
         if(texto!= "" && !texto.isEmpty()){
-             ParserHandleSecure.compilerSecure(texto);
+             ParserHandleSecure.compilerSecure(texto, this.jTextArea2);
         }else{
             JOptionPane.showMessageDialog(this, "Necesitas ingresar texto primero");
         }
@@ -152,7 +152,7 @@ public class EditorPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea1;
-    public static javax.swing.JTextArea jTextArea2;
+    public javax.swing.JTextArea jTextArea2;
     public javax.swing.JLabel line;
     // End of variables declaration//GEN-END:variables
 }

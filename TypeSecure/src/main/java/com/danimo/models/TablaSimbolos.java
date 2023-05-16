@@ -48,6 +48,11 @@ public class TablaSimbolos {
 
     @Override
     public String toString() {
+        if(parent==null){
+            return "TablaSimbolos{" +
+                    "listaVariable=" + listaVariable +
+                    '}';
+        }
         return "TablaSimbolos{" +
                 "listaVariable=" + listaVariable +
                 ", parent=" + parent +

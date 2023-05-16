@@ -86,8 +86,8 @@ public class DebugRunner extends Visitor {
                         String result= (String)variable.getValue();
                         variable_return.setType(Variable.VariableType.STRING);
                         variable_return.setId(variable.getId());
-                        if(result.equalsIgnoreCase("undefined") || result.equalsIgnoreCase("")){
-                            variable_return.setValue("undefined");
+                        if(result.equalsIgnoreCase(Variable.VariableType.UNDEFINED.toString()) || result.equalsIgnoreCase("")){
+                            variable_return.setValue(Variable.VariableType.UNDEFINED.toString());
                             return variable_return;
                         }
                         variable_return.setValue(result);
@@ -115,15 +115,6 @@ public class DebugRunner extends Visitor {
                                 return variable_return;
                             }
                             case NUMBER -> {
-                                /*Double result= Double.parseDouble((String)variable.getValue());
-                                variable_return.setType(Variable.VariableType.NUMBER);
-                                variable_return.setId(variable.getId());
-                                if(result== Math.floor(result)){
-                                    variable_return.setValue(String.valueOf(result.intValue()) );
-                                    return variable_return;
-                                }
-                                variable_return.setValue(Double.toString(result));
-                                return variable_return;*/
                                 return variable;
                             }
                             case STRING -> {
@@ -334,6 +325,7 @@ public class DebugRunner extends Visitor {
                     vr1.setType_modi(i.getType_modi());
                     if(ele!=null){
                         Variable asigment=(Variable) ele.accept(this);
+                        System.out.println("-----"+ asigment.toString());
                         if(asigment!= null && asigment.getType()!=null){
                             if(i.getType_modi().equals(Variable.TypeV.CONST) && asigment.getValue().equals("undefined")){
                                 errorForClient.add(new ObjectErr(asigment.getId(), i.getLine(),i.getColumn(),"SEMANTICO", "Una variable CONST debe tener un valor asignado"));
@@ -425,7 +417,7 @@ public class DebugRunner extends Visitor {
     }
 
     @Override
-    public Instruccion visit(Function i) {
+    public Variable visit(Function i) {
         System.out.println("DEBUG FUNCTION");
         this.table= new TablaSimbolos(this.table);
         ArrayList<Variable> vrs= new ArrayList<>();
@@ -443,7 +435,7 @@ public class DebugRunner extends Visitor {
         }
         vrs.forEach(System.out::println);
         this.table=this.table.getParent();
-
+        return vrs.get(0);
 /*        TablaSimbolos tabla_tmp=  new TablaSimbolos(this.table);
         this.table= tabla_tmp;
         if(i.getInstruccions()!=null){
@@ -459,7 +451,6 @@ public class DebugRunner extends Visitor {
 	console.log(greeting);
 }
 */
-        return null;
     }
 
     @Override
@@ -1354,6 +1345,11 @@ public class DebugRunner extends Visitor {
     @Override
     public Variable visit(Value i) {
         Variable variable = new Variable();
+        if(i.getValue()==null){
+            System.out.println("retorne valor nulo en value");
+            variable.setValue(Variable.VariableType.UNDEFINED);
+            return variable;
+        }
         switch (i.getType()){
             case ENTERO, NUM_DECIMAL -> {
                 variable.setType(Variable.VariableType.NUMBER);
@@ -1479,6 +1475,11 @@ public class DebugRunner extends Visitor {
             vr.setType(Variable.VariableType.NUMBER);
             return vr;
         }
+        /*pedir la lsita de funciones de la tabla de simbolos, que guarda sus instrucciones, entonces
+        * crear un metodo que guardara las funciones si estan bien y si si guardar la instruccion de funcion , para luego buscarla y ejecutar la instruccion*/
+        vr.setId("yo mande");
+        vr.setValue(3);
+        vr.setType(Variable.VariableType.NUMBER);
         return vr;
     }
 
