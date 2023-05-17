@@ -118,11 +118,11 @@ MATH_ABS,MATH_CEIL,MATH_COS,MATH_SIN,MATH_TAN,MATH_EXP,MATH_FLOOR,MATH_POW,MATH_
 SYM,ERROR,MOD,MAS_MAS,MENOS_MENOS, L_LLAVE, R_LLAVE;
 nonterminal instruccion,type,type_f,settear,a,method_string,method_math,type_method_string,parame,
             b,c,d,e,f,g,h,i,if_pro,while_pro,console_pro,else_pro,for_pro,continue_pro,break_pro,return_pro
-            , do_while_pro,sumadores_pro,assignacion_pro,assig_pro,funtion_pro, call_funtion, declare_for;
+            , do_while_pro,sumadores_pro,assignacion_pro,assig_pro,funtion_pro, call_funtion,get_sym;
 nonterminal Ast inic;
 nonterminal  Declare declare_pro;
 nonterminal ArrayList<Parametro> parametros;
-nonterminal ArrayList<Instruccion> instrucciones, declare,expr,expr2,call_f,array_assig_pro, recursividad;
+nonterminal ArrayList<Instruccion> instrucciones, declare,expr,call_f,array_assig_pro, recursividad;
 start with inic;
 
 inic ::=
@@ -166,6 +166,7 @@ instruccion ::=
 				|   return_pro:pro PUNTO_COMA {:RESULT= pro;:}
 				|   continue_pro:pro PUNTO_COMA {:RESULT=pro;:}
 				|   break_pro:pro   PUNTO_COMA {:RESULT=pro;:}
+				|   get_sym:pro {:RESULT=pro;:}
 				|   error PUNTO_COMA
 ;
 
@@ -174,14 +175,6 @@ declare_pro ::=
                 {:
                             RESULT = new Declare(((Token)a).getLine(),((Token)a).getColumn(),returnTypeV(((Token)a).getLexeme()), (ArrayList<Instruccion>)b);
                 :}
-;
-declare_for::=
-                type_f:a assignacion_pro:b
-{:
-ArrayList<Instruccion> array= new ArrayList<>();
-array.add((Instruccion)b);
-RESULT = new Declare(((Token)a).getLine(),((Token)a).getColumn(),returnTypeV(((Token)a).getLexeme()), array);
-;:}
 ;
 declare ::= declare:c COMA assignacion_pro:b
                {:
@@ -379,6 +372,11 @@ break_pro::=
 return_pro::=
         RETURN:retu {:RESULT=new Return(((Token)retu).getLine(),((Token)retu).getColumn(), null);:}
         | RETURN:retu a:dp {:RESULT=new Return(((Token)retu).getLine(),((Token)retu).getColumn(),(Instruccion)dp);:}
+;
+get_sym::=
+        GET_SYMBOL_TABLE:pro L_PARENT R_PARENT PUNTO_COMA
+{:RESULT= new GetTable(((Token)pro).getLine(),((Token)pro).getColumn());:}
+
 ;
 
 a ::= a:pro1 OR b:pro2

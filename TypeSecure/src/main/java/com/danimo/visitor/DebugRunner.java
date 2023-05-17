@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.danimo.Main.view_console;
+import static com.danimo.ParserHandleSecure.generarTablaSym;
 
 public class DebugRunner extends Visitor {
     private static ArrayList<ObjectErr> errorForClient= TypeSecureError.getTypeErrorSingleton().errores;
@@ -337,6 +338,8 @@ public class DebugRunner extends Visitor {
                                 vr1.setId(asigment.getId());
                                 vr1.setType(asigment.getType());
                                 vr1.setValue(asigment.getValue());
+                                vr1.setLine(i.getLine());
+                                vr1.setColumn(i.getColumn());
                                 this.table.nuevo(vr1);
                             }
                         }else{
@@ -1554,6 +1557,15 @@ public class DebugRunner extends Visitor {
         vr.setValue(3);
         vr.setType(Variable.VariableType.NUMBER);
         return vr;
+    }
+
+    @Override
+    public Object visit(GetTable i) {
+        if(this.table!=null){
+           /* generarTablaSym(this.table);*/
+            return null;
+        }
+        return null;
     }
 
     public TablaSimbolos getTable() {

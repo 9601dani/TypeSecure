@@ -24,5 +24,6 @@ public abstract class Visitor {
     public abstract Instruccion visit(Continue i);
     public abstract Instruccion visit(Break i);
     public abstract Variable visit(Call i);
+    public abstract Object visit(GetTable i);
 
 }

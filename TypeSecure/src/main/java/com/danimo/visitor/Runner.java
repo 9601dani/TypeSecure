@@ -10,6 +10,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.danimo.Main.view_console;
+import static com.danimo.ParserHandleSecure.generarTablaErrores;
+import static com.danimo.ParserHandleSecure.generarTablaSym;
 
 
 public class Runner extends Visitor{
@@ -318,6 +320,8 @@ public class Runner extends Visitor{
                                 vr1.setId(asigment.getId());
                                 vr1.setType(asigment.getType());
                                 vr1.setValue(asigment.getValue());
+                                vr1.setLine(i.getLine());
+                                vr1.setColumn(i.getColumn());
                                 this.table.nuevo(vr1);
                             }
                         }else{
@@ -392,7 +396,6 @@ public class Runner extends Visitor{
             return null;
         }catch (Exception e){
             e.printStackTrace();
-            System.out.println("error en el while");
             return null;
         }
     }
@@ -410,14 +413,12 @@ public class Runner extends Visitor{
                         if(this.table.getParent()!=null){
                             this.table= this.table.getParent();
                         }
-                        System.out.println("retorne break en else");
                         return(Instruccion) eleme;
                     } else if (ret.getClass().equals(Continue.class)) {
                         Continue eleme= new Continue(ele_else.getLine(),ele_else.getColumn());
                         if(this.table.getParent()!=null){
                             this.table= this.table.getParent();
                         }
-                        System.out.println("retorne continue en else");
                         return(Instruccion) eleme;
                     }
                 }
@@ -456,12 +457,10 @@ public class Runner extends Visitor{
                 for(Instruccion instr_for: i.getInstruccions()){
                     Object tps=instr_for.accept(this);
                     if(tps!=null){
-                        System.out.println("class "+tps.getClass());
                         if(tps.getClass().equals(Break.class)){
                             isBreak=true;
                             break;
                         } else if (tps.getClass().equals(Continue.class)) {
-                            System.out.println("continue;");
                             isContinue=true;
                             break;
                         } else{
@@ -474,7 +473,7 @@ public class Runner extends Visitor{
                     i.getSalto().accept(this);
                 }
                 if(isContinue){
-                    System.out.println("en teoria hice el break)");
+                    /*System.out.println("continue");*/
                 }
             }else{
                 break;
@@ -530,6 +529,7 @@ public class Runner extends Visitor{
                                 }
                                 return(Instruccion) eleme;
                             }
+                        }else{
                         }
                     }
                      if(this.table.getParent()!=null){
@@ -547,14 +547,12 @@ public class Runner extends Visitor{
                                if(this.table.getParent()!=null){
                                    this.table= this.table.getParent();
                                }
-                               System.out.println("retorne break en if_bloque falso");
                                return(Instruccion) eleme;
                            } else if (return_posible.getClass().equals(Continue.class)) {
                                Continue eleme= new Continue(i.getBloque_falso().getLine(),i.getBloque_falso().getColumn());
                                if(this.table.getParent()!=null){
                                    this.table= this.table.getParent();
                                }
-                               System.out.println("retorne continue en if bloque falso");
                                return(Instruccion) eleme;
                            }
                        }
@@ -573,6 +571,7 @@ public class Runner extends Visitor{
                 return null;
             }
         }catch (Exception e){
+            e.printStackTrace();
             return null;
         }
     }
@@ -1509,7 +1508,6 @@ public class Runner extends Visitor{
             return null;
         }catch (Exception e){
             e.printStackTrace();
-            System.out.println("error en el while");
             return null;
         }
     }
@@ -1526,7 +1524,7 @@ public class Runner extends Visitor{
             return i;
         }
         errorForClient.add(new ObjectErr("CONTINUE",i.getLine(), i.getColumn(),"SEMANTICO","Solamente puedes usar CONTINUE dentro de un ciclo "));
-        return i;
+        return null;
     }
 
     @Override
@@ -1536,11 +1534,20 @@ public class Runner extends Visitor{
             return i;
         }
         errorForClient.add(new ObjectErr("BREAK",i.getLine(), i.getColumn(),"SEMANTICO","Solamente puedes usar break dentro de un ciclo "));
-        return i;
+        return null;
     }
 
     @Override
     public Variable visit(Call i) {
+        return null;
+    }
+
+    @Override
+    public Object visit(GetTable i) {
+        if(this.table!=null){
+            generarTablaSym(this.table);
+            return null;
+        }
         return null;
     }
 

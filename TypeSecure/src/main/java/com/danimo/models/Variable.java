@@ -5,8 +5,26 @@ public class Variable {
     private VariableType type;
     private Object value;
     private TypeV type_modi;
+    private int line;
+    private int column;
 
     public Variable() {
+    }
+
+    public int getLine() {
+        return this.line;
+    }
+
+    public void setLine(final int line) {
+        this.line = line;
+    }
+
+    public int getColumn() {
+        return this.column;
+    }
+
+    public void setColumn(final int column) {
+        this.column = column;
     }
 
     public String getId() {
@@ -61,7 +79,7 @@ public class Variable {
                 ", type=" + type +
                 ", value=" + value +
                 ", type_modi=" + type_modi +
-                '}';
+                '}'+ line +" "+column;
     }
 }
 
