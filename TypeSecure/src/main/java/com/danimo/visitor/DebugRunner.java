@@ -380,7 +380,9 @@ public class DebugRunner extends Visitor {
                         System.out.println("while");
                         System.out.println(ele.getClass());
                     });
-                    this.table=this.table.getParent();
+                    if(this.table.getParent()!=null){
+                            this.table= this.table.getParent();
+                         }
                     return null;
 
                 }else {
@@ -455,7 +457,9 @@ public class DebugRunner extends Visitor {
             this.table= this.table.getParent();
             return null;
         }
-        this.table= this.table.getParent();
+        if(this.table.getParent()!=null){
+            this.table= this.table.getParent();
+        }
         return null;
     }
 
@@ -477,7 +481,9 @@ public class DebugRunner extends Visitor {
             vrs= getVariablesReturn(i.getInstruccions(), new ArrayList<>());
         }
         vrs.forEach(System.out::println);
-        this.table=this.table.getParent();
+                     if(this.table.getParent()!=null){
+                         this.table= this.table.getParent();
+                     }
         return vrs.get(0);
 /*        TablaSimbolos tabla_tmp=  new TablaSimbolos(this.table);
         this.table= tabla_tmp;
@@ -488,7 +494,9 @@ public class DebugRunner extends Visitor {
             }
             return null;
         }
-        this.table=this.table.getParent();*/
+        if(this.table.getParent()!=null){
+                            this.table= this.table.getParent();
+                         }*/
         /*function sayHello2(name: string): void {
 	const greeting = 'Hello ' + name + '!';
 	console.log(greeting);
@@ -1468,7 +1476,9 @@ public class DebugRunner extends Visitor {
                         System.out.println("while");
                         System.out.println(ele.getClass());
                     });
-                    this.table=this.table.getParent();
+                    if(this.table.getParent()!=null){
+                            this.table= this.table.getParent();
+                         }
                     return null;
 
                 }else {

@@ -270,15 +270,19 @@ public class Runner extends Visitor{
     public Variable visit(ConsoleLog i) {
         ArrayList<Variable> arrayDatos= new ArrayList<>();
         if(i.getInstruccions()!=null){
-            i.getInstruccions().forEach(instrucciones_console -> {
+            String dat="";
+            for(Instruccion instruccion_console: i.getInstruccions()){
+                Variable txts = (Variable) instruccion_console.accept(this);
+                dat+=(String) txts.getValue();
+            }
+            /*i.getInstruccions().forEach(instrucciones_console -> {
                 Variable txts = (Variable) instrucciones_console.accept(this);
                 if(txts!=null){
                     String value;
                     arrayDatos.add(txts);
                 }
-            });
-
-            String txt="";
+            });*/
+            /*String txt="";
             if(arrayDatos.size()>=1){
                 for(int p=0; p<arrayDatos.size();p++){
                     txt+=(String)  arrayDatos.get(p).getValue();
@@ -287,9 +291,9 @@ public class Runner extends Visitor{
             if(txt.equals(null)){
                 errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"Semantico","El valor es nulo en console"));
                 return null;
-            }
-            if(!txt.equals("")){
-                view_console.add(txt);
+            }*/
+            if(!dat.equals("")){
+                view_console.add(dat+"\n");
             }
             return null;
         }else{
@@ -337,9 +341,9 @@ public class Runner extends Visitor{
             vr.setValue("true");
             vr.setType(Variable.VariableType.BOOLEAN);
             if(vr.getType()== Variable.VariableType.BOOLEAN){
+                TablaSimbolos tmp= new TablaSimbolos(this.table);
+                this.table=tmp;
                 while(((String)vr.getValue()).equalsIgnoreCase("true")){
-                    TablaSimbolos tmp= new TablaSimbolos(this.table);
-                    this.table=tmp;
                     if(i.getInstruccions()==null){
                         break;
                     }else{
@@ -350,7 +354,9 @@ public class Runner extends Visitor{
                                 if(inst.getClass().equals(Break.class)){
                                         if(inst.getClass().equals(Break.class)){
                                             /*vr=(Variable) i.getOperation().accept(this);*/
-                                            this.table=this.table.getParent();
+                                            if(this.table.getParent()!=null){
+                                                this.table=this.table.getParent();
+                                            }
                                             isBreak=true;
                                             break;
                                         }
@@ -362,7 +368,6 @@ public class Runner extends Visitor{
                             }
                         }
                     }
-                    this.table=this.table.getParent();
                     if(isBreak){
                         vr.setValue("false");
                     }else{
@@ -371,6 +376,9 @@ public class Runner extends Visitor{
                     if((String)vr.getValue()==null){
                         vr.setValue("false");
                     }
+                }
+                if(this.table.getParent()!=null){
+                    this.table=this.table.getParent();
                 }
             }else {
                 errorForClient.add(new ObjectErr(null,i.getOperation().getLine(),i.getOperation().getColumn(),"Semantico","La condicion debe de ser un boolean"));
@@ -409,6 +417,7 @@ public class Runner extends Visitor{
 
     @Override
     public Instruccion visit(ForState i) {
+        this.table= new TablaSimbolos(this.table);
         Boolean isBreak=false;
         for(Instruccion asignacion_for: i.getDeclaraciones()){
             asignacion_for.accept(this);
@@ -416,22 +425,21 @@ public class Runner extends Visitor{
         Variable vr= (Variable)i.getCondition().accept(this);
         if(vr==null){
             errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "La condicion es nula"));
+            this.table= this.table.getParent();
             return null;
         }
         if(vr.getType()!= Variable.VariableType.BOOLEAN){
             errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "La comparacion del for debe ser tipo Boolean"));
+            this.table= this.table.getParent();
             return null;
         }
         while(((String)vr.getValue()).equalsIgnoreCase("true")){
-            this.table= new TablaSimbolos(this.table);
+
             if(i.getInstruccions()!=null){
                 for(Instruccion instr_for: i.getInstruccions()){
                     Object tps=instr_for.accept(this);
                     if(tps!=null){
                         if(tps.getClass().equals(Break.class)){
-                             if(this.table.getParent()!=null){
-                        this.table= this.table.getParent();
-                    }
                             isBreak=true;
                             break;
                         }else{
@@ -441,12 +449,15 @@ public class Runner extends Visitor{
 
                     }
                 }
+                i.getSalto().accept(this);
             }else{
                 break;
             }
-             if(this.table.getParent()!=null){
-                        this.table= this.table.getParent();
-                    }
+            /* if(this.table.getParent()!=null){
+                 System.out.println("setee el scope");
+                 this.table= this.table.getParent();
+                 System.out.println("-------"+ this.table.toString());
+             }*/
             if(isBreak){
                 vr.setValue("false");
             }else{
@@ -456,7 +467,10 @@ public class Runner extends Visitor{
                 vr.setValue("false");
             }
         }
-        this.table=this.table.getParent();
+        if(this.table.getParent()!=null){
+            this.table= this.table.getParent();
+            /*System.out.println("tablaaaaa del final"+this.table.toString() );*/
+        }
         return null;
     }
 
@@ -494,8 +508,8 @@ public class Runner extends Visitor{
                     if(i.getBloque_falso()!=null){
                         i.getBloque_falso().accept(this);
                          if(this.table.getParent()!=null){
-                        this.table= this.table.getParent();
-                    }
+                            this.table= this.table.getParent();
+                         }
                         return null;
                     }
                      if(this.table.getParent()!=null){
@@ -1389,9 +1403,9 @@ public class Runner extends Visitor{
             Variable vr=(Variable) i.getOperation().accept(this);
 
             if(vr.getType()== Variable.VariableType.BOOLEAN){
+                TablaSimbolos tmp= new TablaSimbolos(this.table);
+                this.table=tmp;
                 while(((String)vr.getValue()).equalsIgnoreCase("true")){
-                    TablaSimbolos tmp= new TablaSimbolos(this.table);
-                    this.table=tmp;
                     if(i.getInstruccions()!=null){
                         int contador=1;
                         for(Instruccion ele: i.getInstruccions()){
@@ -1400,7 +1414,9 @@ public class Runner extends Visitor{
                                 if(inst.getClass().equals(Break.class)){
                                         if(inst.getClass().equals(Break.class)){
                                             vr=(Variable) i.getOperation().accept(this);
-                                            this.table=this.table.getParent();
+                                            if(this.table.getParent()!=null){
+                                                this.table=this.table.getParent();
+                                            }
                                             isBreak=true;
                                             break;
                                         }
@@ -1415,7 +1431,9 @@ public class Runner extends Visitor{
                     }else{
                         break;
                     }
-                    this.table=this.table.getParent();
+                    if(this.table.getParent()!=null){
+                        this.table=this.table.getParent();
+                    }
                     if(isBreak){
                         vr.setValue("false");
                     }else{

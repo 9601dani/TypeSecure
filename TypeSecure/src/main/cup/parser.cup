@@ -282,7 +282,7 @@ for_pro ::=
     array.add((Instruccion)decla);
     RESULT= new ForState(((Token)id).getLine(), ((Token)id).getColumn(),array,(Instruccion)compare,(Instruccion)incre,(ArrayList<Instruccion>)instr);
 :}
-           | FOR:id L_PARENT declare_pro:decla PUNTO_COMA a:compare PUNTO_COMA a:incre  R_PARENT L_LLAVE instrucciones:instr R_LLAVE
+           | FOR:id L_PARENT declare_pro:decla PUNTO_COMA a:compare PUNTO_COMA assig_pro:incre  R_PARENT L_LLAVE instrucciones:instr R_LLAVE
 {:  ArrayList<Instruccion> array= new ArrayList<>();
     array.add((Instruccion)decla);
     RESULT= new ForState(((Token)id).getLine(), ((Token)id).getColumn(),array,(Instruccion)compare,(Instruccion)incre,(ArrayList<Instruccion>)instr);
@@ -292,18 +292,18 @@ for_pro ::=
     array.add((Instruccion)decla);
     RESULT= new ForState(((Token)id).getLine(), ((Token)id).getColumn(),array,(Instruccion)compare,(Instruccion)incre,null);
 :}
-           | FOR:id L_PARENT declare_pro:decla PUNTO_COMA a:compare PUNTO_COMA a:incre  R_PARENT L_LLAVE  R_LLAVE
+           | FOR:id L_PARENT declare_pro:decla PUNTO_COMA a:compare PUNTO_COMA assig_pro:incre  R_PARENT L_LLAVE  R_LLAVE
 {:  ArrayList<Instruccion> array= new ArrayList<>();
     array.add((Instruccion)decla);
     RESULT= new ForState(((Token)id).getLine(), ((Token)id).getColumn(),array,(Instruccion)compare,(Instruccion)incre,null);
 :}
          |  FOR:id L_PARENT array_assig_pro:decla PUNTO_COMA a:compare PUNTO_COMA sumadores_pro:incre  R_PARENT L_LLAVE instrucciones:instr R_LLAVE
 {:RESULT= new ForState(((Token)id).getLine(), ((Token)id).getColumn(),(ArrayList<Instruccion>)decla,(Instruccion)compare,(Instruccion)incre,(ArrayList<Instruccion>)instr);:}
-         |  FOR:id L_PARENT array_assig_pro:decla PUNTO_COMA a:compare PUNTO_COMA a:incre  R_PARENT L_LLAVE instrucciones:instr R_LLAVE
+         |  FOR:id L_PARENT array_assig_pro:decla PUNTO_COMA a:compare PUNTO_COMA assig_pro:incre  R_PARENT L_LLAVE instrucciones:instr R_LLAVE
 {:RESULT= new ForState(((Token)id).getLine(), ((Token)id).getColumn(),(ArrayList<Instruccion>)decla,(Instruccion)compare,(Instruccion)incre,(ArrayList<Instruccion>)instr);:}
          |  FOR:id L_PARENT array_assig_pro:decla PUNTO_COMA a:compare PUNTO_COMA sumadores_pro:incre  R_PARENT L_LLAVE  R_LLAVE
 {:RESULT= new ForState(((Token)id).getLine(), ((Token)id).getColumn(),(ArrayList<Instruccion>)decla,(Instruccion)compare,(Instruccion)incre,null);:}
-         |  FOR:id L_PARENT array_assig_pro:decla PUNTO_COMA a:compare PUNTO_COMA a:incre  R_PARENT L_LLAVE R_LLAVE
+         |  FOR:id L_PARENT array_assig_pro:decla PUNTO_COMA a:compare PUNTO_COMA assig_pro:incre  R_PARENT L_LLAVE R_LLAVE
 {:RESULT= new ForState(((Token)id).getLine(), ((Token)id).getColumn(),(ArrayList<Instruccion>)decla,(Instruccion)compare,(Instruccion)incre,null);:}
 ;
 
