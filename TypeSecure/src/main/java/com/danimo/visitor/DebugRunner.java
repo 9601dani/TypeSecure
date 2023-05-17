@@ -17,37 +17,42 @@ public class DebugRunner extends Visitor {
     public Variable visit(Assingment i) {
         //Obtengo el valor
         Variable variable= new Variable();
-        if(i.getValue()==null){
-            variable.setId(i.getId());
-            variable.setValue(Variable.VariableType.UNDEFINED.toString());
-            variable.setType(i.getType());
-            return  variable;
-        }else{
-            Variable value= new Variable();
-            value= (Variable) i.getValue().accept(this);
-            /*System.out.println(value);*/
-            if(value!=null){ //
-                if(i.getType().equals(value.getType())){
-                    variable.setId(i.getId());
-                    variable.setValue(value.getValue());
-                    variable.setType(i.getType());
-                    return variable;
-                }else if(i.getType().equals(Variable.VariableType.DEFINIRLA)){
-                    /*System.out.println("entre a definirla");*/
-                    variable.setId(i.getId());
-                    variable.setValue(value.getValue());
-                    variable.setType(value.getType());
-                    return  variable;
+        if(this.table.getWithId(i.getId())==null){
+            if(i.getValue()==null){
+                variable.setId(i.getId());
+                variable.setValue(Variable.VariableType.UNDEFINED.toString());
+                variable.setType(i.getType());
+                return  variable;
+            }else{
+                Variable value= new Variable();
+                value= (Variable) i.getValue().accept(this);
+                /*System.out.println(value);*/
+                if(value!=null){ //
+                    if(i.getType().equals(value.getType())){
+                        variable.setId(i.getId());
+                        variable.setValue(value.getValue());
+                        variable.setType(i.getType());
+                        return variable;
+                    }else if(i.getType().equals(Variable.VariableType.DEFINIRLA)){
+                        /*System.out.println("entre a definirla");*/
+                        variable.setId(i.getId());
+                        variable.setValue(value.getValue());
+                        variable.setType(value.getType());
+                        return  variable;
+                    }else{
+                        //   System.out.println("o aqui");
+                        errorForClient.add(new ObjectErr(i.getId(),i.getLine(), i.getColumn(), "SEMANTICO","Tipo "+ i.getType()+ " no puedes ponerle un "+ value.getType()));
+                        return null;
+                    }
                 }else{
-                    //   System.out.println("o aqui");
-                    errorForClient.add(new ObjectErr(i.getId(),i.getLine(), i.getColumn(), "SEMANTICO","Tipo "+ i.getType()+ " no puedes ponerle un "+ value.getType()));
+                    System.out.println("aqui");
+                    // errorForClient.add(new ObjectErr(" ",i.getLine(), i.getColumn(), "SEMANTICO","No existe un valor para esto"));
                     return null;
                 }
-            }else{
-                System.out.println("aqui");
-                // errorForClient.add(new ObjectErr(" ",i.getLine(), i.getColumn(), "SEMANTICO","No existe un valor para esto"));
-                return null;
             }
+        }else {
+            errorForClient.add(new ObjectErr(i.getId(),i.getLine(), i.getColumn(), "SEMANTICO","Variable ya declarada"));
+            return null;
         }
     }
 
@@ -325,7 +330,6 @@ public class DebugRunner extends Visitor {
                     vr1.setType_modi(i.getType_modi());
                     if(ele!=null){
                         Variable asigment=(Variable) ele.accept(this);
-                        System.out.println("-----"+ asigment.toString());
                         if(asigment!= null && asigment.getType()!=null){
                             if(i.getType_modi().equals(Variable.TypeV.CONST) && asigment.getValue().equals("undefined")){
                                 errorForClient.add(new ObjectErr(asigment.getId(), i.getLine(),i.getColumn(),"SEMANTICO", "Una variable CONST debe tener un valor asignado"));
@@ -351,32 +355,51 @@ public class DebugRunner extends Visitor {
 
     @Override
     public Instruccion visit(DoWhile i) {
-       /* System.out.println("DEBUG DOWHILE");
+       /* System.out.println("DEBUG DO_WHILE");
         i.getOperation().accept(this);
         i.getInstruccions().forEach(ele->{
             ele.accept(this);
         });*/
-        Variable vr=(Variable) i.getOperation().accept(this);
-        if(vr!=null){
+        try{
+            Variable vr=(Variable) i.getOperation().accept(this);
             TablaSimbolos tmp= new TablaSimbolos(this.table);
             this.table=tmp;
-/*        for(Instruccion ele: i.getInstruccions()){
-            if(ele.getClass().equals(Break.class)){
+            //este metodo es para ver el break;
+        /*for(Instruccion ele: i.getInstruccions()){
+            Instruccion inst=(Instruccion) ele.accept(this);
+            if(inst.getClass().equals(Break.class)){
+                System.out.println("recibi un break, en el while");
                 break;
             }
-            ele.accept(this);
+
         }*/
-            i.getInstruccions().forEach(ele->{
-                if(ele.getClass().equals(Break.class)){
+            if(vr!=null){
+                if(vr.getType()== Variable.VariableType.BOOLEAN){
+                    i.getInstruccions().forEach(ele->{
+                        ele.accept(this);
+                        System.out.println("while");
+                        System.out.println(ele.getClass());
+                    });
+                    this.table=this.table.getParent();
+                    return null;
 
+                }else {
+                    errorForClient.add(new ObjectErr(null,i.getOperation().getLine(),i.getOperation().getColumn(),"Semantico","La condicion debe de ser un boolean"));
+                    return null;
                 }
-                ele.accept(this);
-
-            });
-            this.table=this.table.getParent();
+            }else {
+                errorForClient.add(new ObjectErr(null,i.getOperation().getLine(),i.getOperation().getColumn(),"Semantico","Condicion nula"));
+                return null;
+            }
+        }catch (Exception e){
             return null;
         }
-        return null;
+       /* if(vr!=null &&  vr.getValue()!=null && (String) vr.getValue()!="undefined"){
+
+        }else{
+            errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "Error de comparacion en While"));
+            return null;
+        }*/
     }
 
     @Override
@@ -398,19 +421,39 @@ public class DebugRunner extends Visitor {
     @Override
     public Instruccion visit(ForState i) {
         System.out.println("DEBUG FOR");
+
         TablaSimbolos tmp= new TablaSimbolos(this.table);
         this.table= tmp;
         /*i.getDeclaraciones().accept(this);*/
-        i.getDeclaraciones().forEach(declaraciones_for->{
-            declaraciones_for.accept(this);
-            System.out.println(declaraciones_for.getClass());
-        });
-        i.getCondition().accept(this);
-        i.getSalto().accept(this);
-        if(i.getInstruccions()!=null){
-            i.getInstruccions().forEach(instrucciones_for->{
-                instrucciones_for.accept(this);
+        if(i.getDeclaraciones()!=null){
+            i.getDeclaraciones().forEach(declaraciones_for->{
+                declaraciones_for.accept(this);
+                System.out.println(declaraciones_for.getClass());
             });
+            if(i.getCondition()!=null){
+                i.getCondition().accept(this);
+                if(i.getSalto()!=null){
+                    i.getSalto().accept(this);
+                    if(i.getInstruccions()!=null){
+                        i.getInstruccions().forEach(instrucciones_for->{
+                            instrucciones_for.accept(this);
+                        });
+                    }
+                    this.table= this.table.getParent();
+                }else{
+                    errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "El incremento del for es nulo"));
+                    this.table= this.table.getParent();
+                    return null;
+                }
+            }else{
+                errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "Condiciones de for  nulas"));
+                this.table= this.table.getParent();
+                return null;
+            }
+        }else{
+            errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "Declaraciones del for nulas"));
+            this.table= this.table.getParent();
+            return null;
         }
         this.table= this.table.getParent();
         return null;
@@ -467,33 +510,41 @@ public class DebugRunner extends Visitor {
         }*/
         try{
 
-            i.getInstruccion().accept(this);
-            /*        TablaSimbolos tb= this.table;*/
-            TablaSimbolos tmp_if= new TablaSimbolos(this.table);
-            this.table=tmp_if;
-            for(Instruccion ele: i.getBloque_verdadero()){
-                ele.accept(this);
-                /*if(ele.getClass().equals(Break.class)){
-                    Break eleme= new Break(i.getLine(), i.getColumn());
-                    return(Instruccion) eleme;
+            if(i.getInstruccion()!=null){
+                i.getInstruccion().accept(this);
+                TablaSimbolos tmp_if= new TablaSimbolos(this.table);
+                this.table=tmp_if;
+              /*  if(i.getBloque_verdadero()==null){
+                    this.table= this.table.getParent();
+                    errorForClient.add(new ObjectErr(null,i.getLine(), i.getColumn(),"SEMANTICO", "Falta de comparacion en _IF"));
+                    return null;
+                }*/
+                for(Instruccion ele: i.getBloque_verdadero()){
+                    ele.accept(this);
+                   /* if(ele.getClass().equals(Break.class)){
+                        Break eleme= new Break(i.getLine(), i.getColumn());
+                        return(Instruccion) eleme;
+                    }
+                    return ele;*/
                 }
-                return ele;*/
-            }
-            System.out.println("IF->\n"+this.table);
-            this.table= this.table.getParent();
-            TablaSimbolos tmp_else= new TablaSimbolos(this.table);
-            this.table=tmp_else;
-            if(i.getBloque_falso()!=null){
-                i.getBloque_falso().accept(this);
+                this.table= this.table.getParent();
+                TablaSimbolos tmp_else= new TablaSimbolos(this.table);
+                this.table=tmp_else;
+                if(i.getBloque_falso()!=null){
+                    i.getBloque_falso().accept(this);
+                    this.table= this.table.getParent();
+                    return null;
+                }
+                this.table= this.table.getParent();
+                System.out.println("ELSE->\n"+this.table);
+                return null;
+            }else{
+                errorForClient.add(new ObjectErr(null,i.getLine(), i.getColumn(),"SEMANTICO", "Falta de comparacion en _IF"));
                 return null;
             }
-            this.table= this.table.getParent();
-            System.out.println("ELSE->\n"+this.table);
-            return null;
         }catch (Exception e){
             return null;
         }
-
 
     }
 
@@ -1408,14 +1459,26 @@ public class DebugRunner extends Visitor {
                 System.out.println("recibi un break, en el while");
                 break;
             }
+
         }*/
-            i.getInstruccions().forEach(ele->{
-                ele.accept(this);
-                System.out.println("while");
-                System.out.println(ele.getClass());
-            });
-            this.table=this.table.getParent();
-            return null;
+            if(vr!=null){
+                if(vr.getType()== Variable.VariableType.BOOLEAN){
+                    i.getInstruccions().forEach(ele->{
+                        ele.accept(this);
+                        System.out.println("while");
+                        System.out.println(ele.getClass());
+                    });
+                    this.table=this.table.getParent();
+                    return null;
+
+                }else {
+                    errorForClient.add(new ObjectErr(null,i.getOperation().getLine(),i.getOperation().getColumn(),"Semantico","La condicion debe de ser un boolean"));
+                    return null;
+                }
+            }else {
+                errorForClient.add(new ObjectErr(null,i.getOperation().getLine(),i.getOperation().getColumn(),"Semantico","Condicion nula"));
+                return null;
+            }
         }catch (Exception e){
             return null;
         }
