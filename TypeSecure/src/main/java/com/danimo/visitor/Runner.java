@@ -344,6 +344,7 @@ public class Runner extends Visitor{
                 TablaSimbolos tmp= new TablaSimbolos(this.table);
                 this.table=tmp;
                 while(((String)vr.getValue()).equalsIgnoreCase("true")){
+                    Boolean isContinue=false;
                     if(i.getInstruccions()==null){
                         break;
                     }else{
@@ -352,15 +353,19 @@ public class Runner extends Visitor{
                             Object inst= ele.accept(this);
                             if(inst!=null){
                                 if(inst.getClass().equals(Break.class)){
-                                        if(inst.getClass().equals(Break.class)){
                                             /*vr=(Variable) i.getOperation().accept(this);*/
                                             if(this.table.getParent()!=null){
                                                 this.table=this.table.getParent();
                                             }
                                             isBreak=true;
                                             break;
-                                        }
-                                }else{
+                                } else if (inst.getClass().equals(Continue.class)) {
+                                    if(this.table.getParent()!=null){
+                                        this.table=this.table.getParent();
+                                    }
+                                    isContinue=true;
+                                    break;
+                                } else{
                                     vr=(Variable) inst;
                                 }
                             }else{
@@ -398,13 +403,23 @@ public class Runner extends Visitor{
         this.table= table_else;
         if(i!=null){
             for (Instruccion ele_else: i.getInstruccions()){
-                ele_else.accept(this);
-                if(ele_else.getClass().equals(Break.class)){
-                    Break eleme= new Break(i.getLine(), i.getColumn());
-                     if(this.table.getParent()!=null){
-                        this.table= this.table.getParent();
+                Object ret=ele_else.accept(this);
+                if(ret!=null){
+                    if(ret.getClass().equals(Break.class)){
+                        Break eleme= new Break(i.getLine(), i.getColumn());
+                        if(this.table.getParent()!=null){
+                            this.table= this.table.getParent();
+                        }
+                        System.out.println("retorne break en else");
+                        return(Instruccion) eleme;
+                    } else if (ret.getClass().equals(Continue.class)) {
+                        Continue eleme= new Continue(ele_else.getLine(),ele_else.getColumn());
+                        if(this.table.getParent()!=null){
+                            this.table= this.table.getParent();
+                        }
+                        System.out.println("retorne continue en else");
+                        return(Instruccion) eleme;
                     }
-                    return(Instruccion) ele_else;
                 }
 
             }
@@ -433,23 +448,34 @@ public class Runner extends Visitor{
             this.table= this.table.getParent();
             return null;
         }
+        int line;
+        int column;
         while(((String)vr.getValue()).equalsIgnoreCase("true")){
-
+            Boolean isContinue=false;
             if(i.getInstruccions()!=null){
                 for(Instruccion instr_for: i.getInstruccions()){
                     Object tps=instr_for.accept(this);
                     if(tps!=null){
+                        System.out.println("class "+tps.getClass());
                         if(tps.getClass().equals(Break.class)){
                             isBreak=true;
                             break;
-                        }else{
+                        } else if (tps.getClass().equals(Continue.class)) {
+                            System.out.println("continue;");
+                            isContinue=true;
+                            break;
+                        } else{
                             vr=(Variable) tps;
                         }
                     }else{
-
                     }
                 }
-                i.getSalto().accept(this);
+                if(!isBreak){
+                    i.getSalto().accept(this);
+                }
+                if(isContinue){
+                    System.out.println("en teoria hice el break)");
+                }
             }else{
                 break;
             }
@@ -461,6 +487,7 @@ public class Runner extends Visitor{
             if(isBreak){
                 vr.setValue("false");
             }else{
+                System.out.println("ejecute la condicion");
                 vr=(Variable) i.getCondition().accept(this);
             }
             if((String)vr.getValue()==null){
@@ -482,20 +509,27 @@ public class Runner extends Visitor{
     @Override
     public Instruccion visit(IfState i) {
         try{
-
             if(i.getInstruccion()!=null){
                 Variable comparacion=(Variable) i.getInstruccion().accept(this);
                 if(((String)comparacion.getValue()).equalsIgnoreCase("true")){
                     TablaSimbolos tmp_if= new TablaSimbolos(this.table);
                     this.table=tmp_if;
                     for(Instruccion ele: i.getBloque_verdadero()){
-                        ele.accept(this);
-                        if(ele.getClass().equals(Break.class)){
-                            Break eleme= new Break(i.getLine(), i.getColumn());
-                             if(this.table.getParent()!=null){
-                        this.table= this.table.getParent();
-                    }
-                            return(Instruccion) eleme;
+                        Object ret= ele.accept(this);
+                        if(ret!=null){
+                            if(ret.getClass().equals(Break.class)){
+                                Break eleme= new Break(i.getLine(), i.getColumn());
+                                if(this.table.getParent()!=null){
+                                    this.table= this.table.getParent();
+                                }
+                                return(Instruccion) eleme;
+                            } else if (ret.getClass().equals(Continue.class)) {
+                                Continue eleme= new Continue(i.getLine(), i.getColumn());
+                                if(this.table.getParent()!=null){
+                                    this.table= this.table.getParent();
+                                }
+                                return(Instruccion) eleme;
+                            }
                         }
                     }
                      if(this.table.getParent()!=null){
@@ -506,7 +540,24 @@ public class Runner extends Visitor{
                     TablaSimbolos tmp_else= new TablaSimbolos(this.table);
                     this.table=tmp_else;
                     if(i.getBloque_falso()!=null){
-                        i.getBloque_falso().accept(this);
+                       Object return_posible= i.getBloque_falso().accept(this);
+                       if(return_posible!=null){
+                           if(return_posible.getClass().equals(Break.class)){
+                               Break eleme= new Break(i.getLine(), i.getColumn());
+                               if(this.table.getParent()!=null){
+                                   this.table= this.table.getParent();
+                               }
+                               System.out.println("retorne break en if_bloque falso");
+                               return(Instruccion) eleme;
+                           } else if (return_posible.getClass().equals(Continue.class)) {
+                               Continue eleme= new Continue(i.getBloque_falso().getLine(),i.getBloque_falso().getColumn());
+                               if(this.table.getParent()!=null){
+                                   this.table= this.table.getParent();
+                               }
+                               System.out.println("retorne continue en if bloque falso");
+                               return(Instruccion) eleme;
+                           }
+                       }
                          if(this.table.getParent()!=null){
                             this.table= this.table.getParent();
                          }
@@ -1406,6 +1457,7 @@ public class Runner extends Visitor{
                 TablaSimbolos tmp= new TablaSimbolos(this.table);
                 this.table=tmp;
                 while(((String)vr.getValue()).equalsIgnoreCase("true")){
+                    Boolean isContinue=false;
                     if(i.getInstruccions()!=null){
                         int contador=1;
                         for(Instruccion ele: i.getInstruccions()){
@@ -1413,15 +1465,21 @@ public class Runner extends Visitor{
                             if(inst!=null){
                                 if(inst.getClass().equals(Break.class)){
                                         if(inst.getClass().equals(Break.class)){
-                                            vr=(Variable) i.getOperation().accept(this);
+                                            /*vr=(Variable) i.getOperation().accept(this);*/
                                             if(this.table.getParent()!=null){
                                                 this.table=this.table.getParent();
                                             }
                                             isBreak=true;
                                             break;
                                         }
-                                }else{
-                                    vr=(Variable) inst;
+                                } else if (inst.getClass().equals(Continue.class)) {
+                                    if(this.table.getParent()!=null){
+                                        this.table=this.table.getParent();
+                                    }
+                                    isContinue=true;
+                                    break;
+                                } else{
+                                    /*vr=(Variable) inst;*/
                                 }
                             }else{
                                 /*ele.accept(this);
@@ -1436,6 +1494,7 @@ public class Runner extends Visitor{
                     }
                     if(isBreak){
                         vr.setValue("false");
+                        return new Break(i.getLine(),i.getColumn());
                     }else{
                         vr=(Variable) i.getOperation().accept(this);
                     }
@@ -1462,7 +1521,12 @@ public class Runner extends Visitor{
 
     @Override
     public Instruccion visit(Continue i) {
-        return null;
+        //si si, literalmente hay que hacer un break
+        if(this.table.getParent()!= null){
+            return i;
+        }
+        errorForClient.add(new ObjectErr("CONTINUE",i.getLine(), i.getColumn(),"SEMANTICO","Solamente puedes usar CONTINUE dentro de un ciclo "));
+        return i;
     }
 
     @Override
