@@ -76,6 +76,9 @@ public class TablaSimbolos {
     }
 
     public static ArrayList<Function> getFunciones() {
+        if(funciones==null){
+            funciones= new ArrayList<>();
+        }
         return TablaSimbolos.funciones;
     }
 

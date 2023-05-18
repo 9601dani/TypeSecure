@@ -318,9 +318,9 @@ funtion_pro ::=
                FUNCTION:prod LITERAL:id L_PARENT parametros:param R_PARENT DOS_PUNTOS type:pro_tipo L_LLAVE instrucciones:prod1 R_LLAVE
 {:RESULT= new Function(((Token)prod).getLine(), ((Token)prod).getColumn(),((Token)id).getLexeme(),(ArrayList<Parametro>)param,(ArrayList<Instruccion>)prod1, (Variable.VariableType)pro_tipo);:}
                |  FUNCTION:prod LITERAL:id L_PARENT parametros:param R_PARENT  L_LLAVE instrucciones:prod1 R_LLAVE
-{:RESULT= new Function(((Token)prod).getLine(), ((Token)prod).getColumn(),((Token)id).getLexeme(),(ArrayList<Parametro>)param,(ArrayList<Instruccion>)prod1, Variable.VariableType.VOID);:}
+{:RESULT= new Function(((Token)prod).getLine(), ((Token)prod).getColumn(),((Token)id).getLexeme(),(ArrayList<Parametro>)param,(ArrayList<Instruccion>)prod1, Variable.VariableType.DEFINIRLA);:}
                |  FUNCTION:prod LITERAL:id L_PARENT parametros:param R_PARENT  L_LLAVE R_LLAVE
-{:RESULT= new Function(((Token)prod).getLine(), ((Token)prod).getColumn(),((Token)id).getLexeme(),(ArrayList<Parametro>)param,null, Variable.VariableType.VOID);:}
+{:RESULT= new Function(((Token)prod).getLine(), ((Token)prod).getColumn(),((Token)id).getLexeme(),(ArrayList<Parametro>)param,null, Variable.VariableType.DEFINIRLA);:}
 ;
 parametros ::=
               parametros:prod COMA parame:prod1

@@ -486,7 +486,6 @@ public class Runner extends Visitor{
             if(isBreak){
                 vr.setValue("false");
             }else{
-                System.out.println("ejecute la condicion");
                 vr=(Variable) i.getCondition().accept(this);
             }
             if((String)vr.getValue()==null){

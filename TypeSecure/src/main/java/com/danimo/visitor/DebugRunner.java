@@ -4,6 +4,7 @@ import com.danimo.manageError.ObjectErr;
 import com.danimo.manageError.TypeSecureError;
 import com.danimo.models.*;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -307,7 +308,7 @@ public class DebugRunner extends Visitor {
             String txt="";
             if(arrayDatos.size()>=1){
                 for(int p=0; p<arrayDatos.size();p++){
-                    txt+=(String)  arrayDatos.get(p).getValue();
+                    txt+=(String) arrayDatos.get(p).getValue();
                 }
             }
             if(txt.equals(null)){
@@ -472,22 +473,74 @@ public class DebugRunner extends Visitor {
         this.table= new TablaSimbolos(this.table);
         ArrayList<Variable> vrs= new ArrayList<>();
         if(i.getParametros()!=null){
-            i.getParametros().forEach(parametros_fun->{
-                /*if(parametros_fun==null){
-                    this.table.nuevo(parametros_fun.accept(this));
-                }*/
-
-            });
+            for (Instruccion parametro_fun: i.getParametros()){
+                if(parametro_fun!=null){
+                    Variable n_variable= (Variable)parametro_fun.accept(this);
+                    if(n_variable== null){
+                        //ERROR PARAMETRO NO DEFINIDO
+                        System.out.println("VARIABLE NADA QUE VER");
+                    }else{
+                        this.table.nuevo(n_variable);
+                    }
+                }
+            }
         }
         if(i.getInstruccions()!=null){
             System.out.println("no es nulo");
-            vrs= getVariablesReturn(i.getInstruccions(), new ArrayList<>());
+                for(Instruccion instr: i.getInstruccions()){
+                    Object pso=instr.accept(this);
+                    System.out.printf("TIPO DE FUNCION ->"+ i.getType());
+                    if(i.getType().equals(Variable.VariableType.VOID)){
+                        if(pso!=null){
+                            if(pso.getClass().equals(Return.class)){
+                                Object variable_returrn=((Return)pso).getInstruccion().accept(this);
+                            }
+                        }
+                    }else{
+                        if(this.verificarVariables(i.getInstruccions())){
+                            System.out.println("1");
+                            if(i.getInstruccions().get(i.getInstruccions().size()-1) instanceof Return){
+                                System.out.println("2");
+                                if(pso!=null){
+                                    System.out.println("3");
+                                        System.out.println("4");
+                                        Object variable_returrn=((Variable)pso);
+                                        if(variable_returrn.getClass().equals(Variable.class)){
+                                            System.out.println("5");
+                                            System.out.println("TYPO VARIABLE RETORNO-> "+((Variable) variable_returrn).getType());
+                                            if(i.getType()==null || i.getType()== Variable.VariableType.DEFINIRLA){
+                                                i.setType(((Variable) variable_returrn).getType());
+                                            }
+                                            Variable variable_de_retorno= ((Variable)variable_returrn);
+                                            if(((Variable) variable_de_retorno).getType().equals(i.getType())){
+                                                this.table.getFunciones().add(i);
+                                                this.table=this.table.getParent();
+                                                return variable_de_retorno;
+                                            }else{
+                                                errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "La variable de retorno no es tipo -> "+ i.getType()));
+                                                System.out.println("LA VARIABLE DE RETORNO ES DISTINTO AL DE LA FUNCION");
+                                            }
+                                        }else{
+                                            errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "SE DEBE RETORNAR UNA VARIABLE"));
+                                            System.out.println("DEBE RETORNAR UNA VARIABLE");
+                                        }
+                                }else{
+                                    System.out.println("pso nullll");
+                                }
+                            }else{
+                                errorForClient.add(new ObjectErr(null, i.getInstruccions().get(i.getInstruccions().size()-1).getLine(),i.getInstruccions().get(i.getInstruccions().size()-1).getColumn(),"SEMANTICO", "La ultima instruccion debe ser un RETURN o si hay instrucciones abajo del return no se ejecutaran"));
+                                System.out.println("DEBE RETORNAR UNA VARIABLE");
+                            }
+                        }else{
+                            errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "Todos los return de la funcion deben ser del mismo tipo"));
+                            System.out.println("DEBE RETORNAR UNA VARIABLE");
+                        }
+                    }
+                }
+
         }
-        vrs.forEach(System.out::println);
-                     if(this.table.getParent()!=null){
-                         this.table= this.table.getParent();
-                     }
-        return vrs.get(0);
+        this.table= this.table.getParent();
+        return null;
 /*        TablaSimbolos tabla_tmp=  new TablaSimbolos(this.table);
         this.table= tabla_tmp;
         if(i.getInstruccions()!=null){
@@ -505,6 +558,33 @@ public class DebugRunner extends Visitor {
 	console.log(greeting);
 }
 */
+    }
+    public Boolean verificarVariables(ArrayList<Instruccion> array_instr){
+        ArrayList<Variable> vr = new ArrayList<>();
+            array_instr.forEach(elementos->{
+                Object ts= elementos.accept(this);
+                if(ts!=null){
+                    if(ts.getClass().equals(Return.class)){
+                        vr.add((Variable) elementos.accept(this));
+                    }
+                }
+            });
+            if(vr.size()>0){
+                Variable.VariableType tipo= vr.get(0).getType();
+                System.out.println("SON "+vr.size());
+                System.out.println("TODAS SERAN DE TIPO-> "+tipo);
+                for (int i = 0; i < vr.size(); i++) {
+                    System.out.println("LA "+i+" ES TIPO "+vr.get(i).getType());
+                    if (vr.get(i).getType() != tipo) {
+                        return false; // Se encontró un elemento con un tipo diferente, por lo tanto no todos los elementos tienen el mismo tipo.
+                    }
+                }
+                System.out.println("TODAS LAS VARIABLES SON IGUALES");
+                return true; // Todos los elementos tienen el mismo tipo.
+
+            }else{
+                return true;
+            }
     }
 
     @Override
@@ -531,7 +611,7 @@ public class DebugRunner extends Visitor {
                     return null;
                 }*/
                 for(Instruccion ele: i.getBloque_verdadero()){
-                    ele.accept(this);
+                    Object tsp=ele.accept(this);
                    /* if(ele.getClass().equals(Break.class)){
                         Break eleme= new Break(i.getLine(), i.getColumn());
                         return(Instruccion) eleme;
@@ -1401,9 +1481,29 @@ public class DebugRunner extends Visitor {
         Variable vr= new Variable();
         vr.setId(i.getId());
         vr.setType(i.getType());
+        vr.setValue(asignarValorPredeterminado(i.getType()));
         return vr;
     }
 
+    public String asignarValorPredeterminado(Variable.VariableType vr){
+        switch (vr){
+            case BIGINT -> {
+                return "1n";
+            }
+            case STRING ->{
+                return "hola";
+            }
+            case NUMBER -> {
+                return "1";
+            }
+            case BOOLEAN -> {
+                return "false";
+            }
+            default -> {
+               return "1";
+            }
+        }
+    }
     @Override
     public Variable visit(Value i) {
         Variable variable = new Variable();
@@ -1518,6 +1618,7 @@ public class DebugRunner extends Visitor {
             }
 
         }
+        errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO", "Error porque no se retorna nada/ nulo"));
         return null;
     }
 
@@ -1542,19 +1643,27 @@ public class DebugRunner extends Visitor {
         System.out.println("ENCONTRE UN CALL");
         Variable vr= new Variable();
         if(i.getAsignaciones()!=null){
-            i.getAsignaciones().forEach(asignaciones_call->{
-                asignaciones_call.accept(this);
-            });
+            for(Instruccion asignaciones_call: i.getAsignaciones()){
+                Object result=asignaciones_call.accept(this);
+                if(result.getClass().equals(Return.class)){
+                    Object vdd_result= ((Return)result).getInstruccion().accept(this);
+                    if(vdd_result.getClass().equals(Value.class)){
+
+                    }else{
+                        //ERROR PORQUE NO SE RETORNA UN VALOR
+                    }
+                }
+            }
             System.out.println("aqui mandare algo");
             vr.setId("yo mande");
-            vr.setValue(2);
+            vr.setValue("2");
             vr.setType(Variable.VariableType.NUMBER);
             return vr;
         }
         /*pedir la lsita de funciones de la tabla de simbolos, que guarda sus instrucciones, entonces
         * crear un metodo que guardara las funciones si estan bien y si si guardar la instruccion de funcion , para luego buscarla y ejecutar la instruccion*/
         vr.setId("yo mande");
-        vr.setValue(3);
+        vr.setValue("3");
         vr.setType(Variable.VariableType.NUMBER);
         return vr;
     }
