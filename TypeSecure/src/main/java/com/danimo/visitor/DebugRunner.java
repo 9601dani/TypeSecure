@@ -15,11 +15,13 @@ import static com.danimo.ParserHandleSecure.generarTablaSym;
 public class DebugRunner extends Visitor {
     private static ArrayList<ObjectErr> errorForClient= TypeSecureError.getTypeErrorSingleton().errores;
     private TablaSimbolos table= new TablaSimbolos(null);
+    private Boolean  encontro_return=false;
     @Override
     public Variable visit(Assingment i) {
         //Obtengo el valor
         Variable variable= new Variable();
         if(this.table.getWithId(i.getId())==null){
+            System.out.println("LA VARIABLE SI LA AÑADIRE");
             if(i.getValue()==null){
                 variable.setId(i.getId());
                 variable.setValue(Variable.VariableType.UNDEFINED.toString());
@@ -53,6 +55,7 @@ public class DebugRunner extends Visitor {
                 }
             }
         }else {
+            System.out.println("\n--------------------------> "+ i.getId());
             errorForClient.add(new ObjectErr(i.getId(),i.getLine(), i.getColumn(), "SEMANTICO","Variable ya declarada"));
             return null;
         }
@@ -445,20 +448,25 @@ public class DebugRunner extends Visitor {
                             instrucciones_for.accept(this);
                         });
                     }
-                    this.table= this.table.getParent();
                 }else{
                     errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "El incremento del for es nulo"));
-                    this.table= this.table.getParent();
+                    if(this.table.getParent()!=null){
+                        this.table= this.table.getParent();
+                    }
                     return null;
                 }
             }else{
                 errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "Condiciones de for  nulas"));
-                this.table= this.table.getParent();
+                if(this.table.getParent()!=null){
+                    this.table= this.table.getParent();
+                }
                 return null;
             }
         }else{
             errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "Declaraciones del for nulas"));
-            this.table= this.table.getParent();
+            if(this.table.getParent()!=null){
+                this.table= this.table.getParent();
+            }
             return null;
         }
         if(this.table.getParent()!=null){
@@ -470,16 +478,23 @@ public class DebugRunner extends Visitor {
     @Override
     public Variable visit(Function i) {
         System.out.println("DEBUG FUNCTION");
+        System.out.println(i.getOnTable());
+        ArrayList<Function> tmp_arrays= this.table.getFunciones();
         this.table= new TablaSimbolos(this.table);
+        this.table.setFunciones(tmp_arrays);
+
         ArrayList<Variable> vrs= new ArrayList<>();
         if(i.getParametros()!=null){
             for (Instruccion parametro_fun: i.getParametros()){
                 if(parametro_fun!=null){
                     Variable n_variable= (Variable)parametro_fun.accept(this);
+                    n_variable.setValue(asignarValorPredeterminado(n_variable.getType()));
                     if(n_variable== null){
                         //ERROR PARAMETRO NO DEFINIDO
                         System.out.println("VARIABLE NADA QUE VER");
                     }else{
+                        System.out.println("----------------------------AÑADI UN NUEVO VALOR");
+                        n_variable.setValue(asignarValorPredeterminado(n_variable.getType()));
                         this.table.nuevo(n_variable);
                     }
                 }
@@ -487,54 +502,162 @@ public class DebugRunner extends Visitor {
         }
         if(i.getInstruccions()!=null){
             System.out.println("no es nulo");
+            System.out.println(i.getInstruccions().toString());
                 for(Instruccion instr: i.getInstruccions()){
                     Object pso=instr.accept(this);
                     System.out.printf("TIPO DE FUNCION ->"+ i.getType());
                     if(i.getType().equals(Variable.VariableType.VOID)){
-                        if(pso!=null){
-                            if(pso.getClass().equals(Return.class)){
-                                Object variable_returrn=((Return)pso).getInstruccion().accept(this);
-                            }
-                        }
-                    }else{
-                        if(this.verificarVariables(i.getInstruccions())){
-                            System.out.println("1");
-                            if(i.getInstruccions().get(i.getInstruccions().size()-1) instanceof Return){
-                                System.out.println("2");
+                                System.out.println("3");
+                                System.out.println("4");
                                 if(pso!=null){
-                                    System.out.println("3");
-                                        System.out.println("4");
-                                        Object variable_returrn=((Variable)pso);
-                                        if(variable_returrn.getClass().equals(Variable.class)){
-                                            System.out.println("5");
-                                            System.out.println("TYPO VARIABLE RETORNO-> "+((Variable) variable_returrn).getType());
-                                            if(i.getType()==null || i.getType()== Variable.VariableType.DEFINIRLA){
-                                                i.setType(((Variable) variable_returrn).getType());
+                                    if(pso.getClass().equals(Return.class)){
+                                        errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "la funcion es tipo void, no debes retornar nada"));
+                                        return null;
+                                    }
+                                }
+                                        System.out.println("añadiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
+                                        /*i.setOnTable(true);*/
+                                        this.table.getFunciones().add(i);
+                                        ArrayList<Function> tmp= this.table.getFunciones();
+                                        this.table=this.table.getParent();
+                                        this.table.setFunciones(tmp);
+                                        return null;
+                    }else{
+                        if(i.getType().equals(Variable.VariableType.DEFINIRLA)){
+                            if(!verificarVariables(i.getInstruccions())){
+                                i.setType(Variable.VariableType.VOID);
+                                System.out.println("3");
+                                System.out.println("4");
+                                if(pso!=null){
+                                    if(pso.getClass().equals(Return.class)){
+                                        errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "la funcion es tipo void, no debes retornar nada"));
+                                        return null;
+                                    }
+                                }
+                                System.out.println("añadiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
+                                /*i.setOnTable(true);*/
+                                this.table.getFunciones().add(i);
+                                ArrayList<Function> tmp= this.table.getFunciones();
+                                this.table=this.table.getParent();
+                                this.table.setFunciones(tmp);
+                                return null;
+                            }else{
+                                if(this.verificarVariables(i.getInstruccions())){
+                                    System.out.println("DEOLVIIIII TRUEEE");
+                                    System.out.println("1111111111111");
+                                    if(i.getInstruccions().get(i.getInstruccions().size()-1) instanceof Return){
+                                        System.out.println("ESSSS TIPO RETURN LA FINAL");
+                                        System.out.println("2");
+                                        if(pso!=null){
+                                            System.out.println("3");
+                                            System.out.println("4");
+                                            Object instru= pso;
+                                            Object variable_returrn=null;
+                                            if(pso.getClass().equals(Return.class)){
+                                                variable_returrn=((Variable)((Return)pso).getInstruccion().accept(this));
                                             }
-                                            Variable variable_de_retorno= ((Variable)variable_returrn);
-                                            if(((Variable) variable_de_retorno).getType().equals(i.getType())){
-                                                this.table.getFunciones().add(i);
-                                                this.table=this.table.getParent();
-                                                return variable_de_retorno;
+                                            if(variable_returrn!=null){
+                                                if(variable_returrn.getClass().equals(Variable.class)){
+                                                    System.out.println("5");
+                                                    System.out.println("TYPO VARIABLE RETORNO-> "+((Variable) variable_returrn).getType());
+                                                    if(i.getType()==null || i.getType()== Variable.VariableType.DEFINIRLA){
+                                                        i.setType(((Variable) variable_returrn).getType());
+                                                    }
+                                                    Variable variable_de_retorno= ((Variable)variable_returrn);
+                                                    if(((Variable) variable_de_retorno).getType().equals(i.getType())){
+                                                        System.out.println("añadiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
+                                                        /*i.setOnTable(true);*/
+                                                        this.table.getFunciones().add(i);
+                                                        ArrayList<Function> tmp= this.table.getFunciones();
+                                                        this.table=this.table.getParent();
+                                                        this.table.setFunciones(tmp);
+                                                        return variable_de_retorno;
+                                                    }else{
+                                                        errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "La variable de retorno no es tipo -> "+ i.getType()));
+                                                        System.out.println("LA VARIABLE DE RETORNO ES DISTINTO AL DE LA FUNCION");
+                                                    }
+                                                }else{
+                                                    errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "SE DEBE RETORNAR UNA VARIABLE"));
+                                                    System.out.println("DEBE RETORNAR UNA VARIABLE");
+                                                }
                                             }else{
-                                                errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "La variable de retorno no es tipo -> "+ i.getType()));
-                                                System.out.println("LA VARIABLE DE RETORNO ES DISTINTO AL DE LA FUNCION");
+                                                if(i.getType()==null || i.getType()== Variable.VariableType.DEFINIRLA){
+                                                    i.setType(Variable.VariableType.VOID);
+                                                }else{
+                                                    errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "SE DEBE RETORNAR ALGUNA VARIABLE"));
+                                                    System.out.println("DEBE RETORNAR UNA VARIABLE");
+                                                }
                                             }
                                         }else{
-                                            errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "SE DEBE RETORNAR UNA VARIABLE"));
-                                            System.out.println("DEBE RETORNAR UNA VARIABLE");
+                                            System.out.println("pso nullll");
                                         }
+                                    }else{
+                                        errorForClient.add(new ObjectErr(null, i.getInstruccions().get(i.getInstruccions().size()-1).getLine(),i.getInstruccions().get(i.getInstruccions().size()-1).getColumn(),"SEMANTICO", "La ultima instruccion debe ser un RETURN o si hay instrucciones abajo del return no se ejecutaran"));
+                                        System.out.println("DEBE RETORNAR UNA VARIABLE");
+                                    }
                                 }else{
-                                    System.out.println("pso nullll");
+                                    errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "Todos los return de la funcion deben ser del mismo tipo"));
+                                    System.out.println("DEBE RETORNAR UNA VARIABLE");
                                 }
-                            }else{
-                                errorForClient.add(new ObjectErr(null, i.getInstruccions().get(i.getInstruccions().size()-1).getLine(),i.getInstruccions().get(i.getInstruccions().size()-1).getColumn(),"SEMANTICO", "La ultima instruccion debe ser un RETURN o si hay instrucciones abajo del return no se ejecutaran"));
-                                System.out.println("DEBE RETORNAR UNA VARIABLE");
                             }
                         }else{
-                            errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "Todos los return de la funcion deben ser del mismo tipo"));
-                            System.out.println("DEBE RETORNAR UNA VARIABLE");
+                            if(this.verificarVariables(i.getInstruccions())){
+                                System.out.println("121212121212121212");
+                                if(i.getInstruccions().get(i.getInstruccions().size()-1) instanceof Return){
+                                    System.out.println("2");
+                                    if(pso!=null){
+                                        System.out.println("3");
+                                        System.out.println("4");
+                                        Object instru= pso;
+                                        Object variable_returrn=null;
+                                        if(pso.getClass().equals(Return.class)){
+                                            variable_returrn=((Variable)((Return)pso).getInstruccion().accept(this));
+                                        }
+                                        if(variable_returrn!=null){
+                                            if(variable_returrn.getClass().equals(Variable.class)){
+                                                System.out.println("5");
+                                                System.out.println("TYPO VARIABLE RETORNO-> "+((Variable) variable_returrn).getType());
+                                                if(i.getType()==null || i.getType()== Variable.VariableType.DEFINIRLA){
+                                                    i.setType(((Variable) variable_returrn).getType());
+                                                }
+                                                Variable variable_de_retorno= ((Variable)variable_returrn);
+                                                if(((Variable) variable_de_retorno).getType().equals(i.getType())){
+                                                    System.out.println("añadiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
+                                                    /*i.setOnTable(true);*/
+                                                    this.table.getFunciones().add(i);
+                                                    ArrayList<Function> tmp= this.table.getFunciones();
+                                                    this.table=this.table.getParent();
+                                                    this.table.setFunciones(tmp);
+                                                    return variable_de_retorno;
+                                                }else{
+                                                    errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "La variable de retorno no es tipo -> "+ i.getType()));
+                                                    System.out.println("LA VARIABLE DE RETORNO ES DISTINTO AL DE LA FUNCION");
+                                                }
+                                            }else{
+                                                errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "SE DEBE RETORNAR UNA VARIABLE"));
+                                                System.out.println("DEBE RETORNAR UNA VARIABLE");
+                                            }
+                                        }else{
+                                            if(i.getType()==null || i.getType()== Variable.VariableType.DEFINIRLA){
+                                                i.setType(Variable.VariableType.VOID);
+                                            }else{
+                                                errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "SE DEBE RETORNAR ALGUNA VARIABLE"));
+                                                System.out.println("DEBE RETORNAR UNA VARIABLE");
+                                            }
+                                        }
+                                    }else{
+                                        System.out.println("pso nullll");
+                                    }
+                                }else{
+                                    errorForClient.add(new ObjectErr(null, i.getInstruccions().get(i.getInstruccions().size()-1).getLine(),i.getInstruccions().get(i.getInstruccions().size()-1).getColumn(),"SEMANTICO", "La ultima instruccion debe ser un RETURN o si hay instrucciones abajo del return no se ejecutaran"));
+                                    System.out.println("DEBE RETORNAR UNA VARIABLE");
+                                }
+                            }else{
+                                errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "Todos los return de la funcion deben ser del mismo tipo"));
+                                System.out.println("DEBE RETORNAR UNA VARIABLE");
+                            }
                         }
+
                     }
                 }
 
@@ -560,12 +683,18 @@ public class DebugRunner extends Visitor {
 */
     }
     public Boolean verificarVariables(ArrayList<Instruccion> array_instr){
+
         ArrayList<Variable> vr = new ArrayList<>();
+        if(array_instr!=null){
             array_instr.forEach(elementos->{
-                Object ts= elementos.accept(this);
-                if(ts!=null){
-                    if(ts.getClass().equals(Return.class)){
-                        vr.add((Variable) elementos.accept(this));
+                System.out.println(elementos.getClass()+" clOSEEEEEEEEEEE");
+                if(elementos instanceof Return){
+                    this.encontro_return=true;
+                    Object ts= elementos.accept(this);
+                    if(ts!=null){
+                        if(ts.getClass().equals(Return.class)){
+                            vr.add((Variable) ((Return) elementos).getInstruccion().accept(this));
+                        }
                     }
                 }
             });
@@ -583,8 +712,10 @@ public class DebugRunner extends Visitor {
                 return true; // Todos los elementos tienen el mismo tipo.
 
             }else{
-                return true;
+                return false;
             }
+        }
+        return false;
     }
 
     @Override
@@ -600,7 +731,8 @@ public class DebugRunner extends Visitor {
             }
         }*/
         try{
-
+            Boolean ret= false;
+            Variable rst= null;
             if(i.getInstruccion()!=null){
                 i.getInstruccion().accept(this);
                 TablaSimbolos tmp_if= new TablaSimbolos(this.table);
@@ -617,6 +749,12 @@ public class DebugRunner extends Visitor {
                         return(Instruccion) eleme;
                     }
                     return ele;*/
+                    if(tsp!=null){
+                        if(tsp.getClass().equals(Variable.class)){
+                            rst= (Variable) tsp;
+
+                        }
+                    }
                 }
                 this.table= this.table.getParent();
                 TablaSimbolos tmp_else= new TablaSimbolos(this.table);
@@ -1102,8 +1240,8 @@ public class DebugRunner extends Visitor {
                     }
                     case DIVIDE -> {
                         if(ope_left.getType().equals(Variable.VariableType.NUMBER) || ope_left.getType().equals(Variable.VariableType.BIGINT)){
-                            String data= (String.valueOf(extractNumber((String)ope_rigth.getValue()))) ;
-                            if(Double.parseDouble(data)!=0){
+                            String data="";
+//                            if(Double.parseDouble(data)!=0){
                                 if (ope_left.getType().equals(Variable.VariableType.NUMBER)) {
                                     System.out.println("hare un number");
                                     Double result=Double.parseDouble((String) ope_left.getValue())/Double.parseDouble((String) ope_rigth.getValue());
@@ -1124,10 +1262,10 @@ public class DebugRunner extends Visitor {
                                     errorForClient.add(new ObjectErr(ope_left.getType().toString(), i.getLine(),i.getColumn(),"SEMANTICO", "El tipo no es operable aritmeticamente"));
                                     return null;
                                 }
-                            }else{
+                          /*  }else{
                                 errorForClient.add(new ObjectErr(" ", i.getLine(),i.getColumn(),"SEMANTICO", "Estas diviendo por 0"));
                                 return null;
-                            }
+                            }*/
                         }else{
                             errorForClient.add(new ObjectErr(ope_left.getType().toString(), i.getLine(),i.getColumn(),"SEMANTICO", "El tipo no es operable aritmeticamente"));
                             return null;
@@ -1604,7 +1742,7 @@ public class DebugRunner extends Visitor {
     }
 
     @Override
-    public Variable visit(Return i) {
+    public Instruccion visit(Return i) {
         if(this.table.getParent()==null){
             errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO", "El return solamente se usa dentro de ciclos/funciones"));
         }
@@ -1614,7 +1752,7 @@ public class DebugRunner extends Visitor {
                 errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO", "Error en la oepracion del Return "));
                 return null;
             }else {
-                return vr;
+                return i;
             }
 
         }
@@ -1624,6 +1762,11 @@ public class DebugRunner extends Visitor {
 
     @Override
     public Instruccion visit(Continue i) {
+        //si si, literalmente hay que hacer un break
+        if(this.table.getParent()!= null){
+            return i;
+        }
+        errorForClient.add(new ObjectErr("CONTINUE",i.getLine(), i.getColumn(),"SEMANTICO","Solamente puedes usar CONTINUE dentro de un ciclo "));
         return null;
     }
 

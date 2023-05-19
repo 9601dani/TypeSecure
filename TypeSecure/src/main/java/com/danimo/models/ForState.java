@@ -61,4 +61,14 @@ public class ForState extends Instruccion {
         return v.visit(this);
 
     }
+
+    @Override
+    public String toString() {
+        return "ForState{" +
+                "declaraciones=" + declaraciones +
+                ", condition=" + condition +
+                ", salto=" + salto +
+                ", instruccions=" + instruccions +
+                '}';
+    }
 }

@@ -16,7 +16,7 @@ public class Return extends Instruccion{
     }
 
     @Override
-    public Variable accept(Visitor v) {
+    public Instruccion accept(Visitor v) {
         return v.visit(this);
     }
 

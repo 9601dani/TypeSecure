@@ -20,7 +20,7 @@ public abstract class Visitor {
     public abstract Variable visit(Parametro i);
     public abstract  Variable visit(Value i);
     public abstract Instruccion visit(While i);
-    public abstract Variable visit(Return i);
+    public abstract Instruccion visit(Return i);
     public abstract Instruccion visit(Continue i);
     public abstract Instruccion visit(Break i);
     public abstract Variable visit(Call i);

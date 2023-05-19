@@ -353,7 +353,7 @@ call_f::=
        | a:b
           {:
          		         RESULT= new ArrayList<Instruccion>();
-                          RESULT.add((Value)b);
+                          RESULT.add((Instruccion)b);
          :}
 ;
 sumadores_pro::=

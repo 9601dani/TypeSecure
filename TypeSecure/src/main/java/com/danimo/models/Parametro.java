@@ -5,11 +5,13 @@ import com.danimo.visitor.Visitor;
 public class Parametro extends Instruccion {
     private String id;
     private Variable.VariableType type;
+    private String valor;
 
     public Parametro(final int line, final int column, final String id, final Variable.VariableType type) {
         super(line, column);
         this.id = id;
         this.type = type;
+        this.valor=null;
     }
 
     @Override
@@ -36,6 +38,14 @@ public class Parametro extends Instruccion {
 
     public void setType(final Variable.VariableType type) {
         this.type = type;
+    }
+
+    public String getValor() {
+        return this.valor;
+    }
+
+    public void setValor(final String valor) {
+        this.valor = valor;
     }
 
     @Override

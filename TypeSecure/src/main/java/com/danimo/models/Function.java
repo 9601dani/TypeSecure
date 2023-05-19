@@ -9,6 +9,7 @@ public class Function extends  Instruccion{
     private ArrayList<Parametro> parametros;
     private ArrayList<Instruccion> instruccions;
     private Variable.VariableType  type;
+    private Boolean isOnTable;
 
     public Function(final int line, final int column, final String name, final ArrayList<Parametro> parametros, final ArrayList<Instruccion> instruccions, final Variable.VariableType type) {
         super(line, column);
@@ -16,6 +17,7 @@ public class Function extends  Instruccion{
         this.parametros = parametros;
         this.instruccions = instruccions;
         this.type = type;
+        this.isOnTable=false;
     }
 
     @Override
@@ -58,6 +60,22 @@ public class Function extends  Instruccion{
 
     public void setType(final Variable.VariableType type) {
         this.type = type;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(final String name) {
+        this.name = name;
+    }
+
+    public Boolean getOnTable() {
+        return this.isOnTable;
+    }
+
+    public void setOnTable(final Boolean onTable) {
+        this.isOnTable = onTable;
     }
 
     @Override

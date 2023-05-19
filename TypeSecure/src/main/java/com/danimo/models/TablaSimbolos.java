@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class TablaSimbolos {
     private ArrayList<Variable> listaVariable;
     private TablaSimbolos parent;
-    private static ArrayList<Function> funciones;
+    private  ArrayList<Function> funciones;
     public TablaSimbolos(TablaSimbolos parent) {
         super();
         if (parent != null) {
@@ -29,6 +29,21 @@ public class TablaSimbolos {
            }
            table= table.parent;
        }while(table!=null);
+        return null;
+    }
+    public Instruccion getFunctionWithName(String name){
+        Function fuc_return=null;
+        if(this.funciones!=null){
+            for( Function fc: funciones){
+                if(fc.getName().equals(name)){
+                    fuc_return= fc;
+                    return fuc_return;
+                }
+            }
+            if(fuc_return!=null){
+                return fuc_return;
+            }
+        }
         return null;
     }
 
@@ -75,14 +90,15 @@ public class TablaSimbolos {
         this.parent = parent;
     }
 
-    public static ArrayList<Function> getFunciones() {
+    public  ArrayList<Function> getFunciones() {
         if(funciones==null){
             funciones= new ArrayList<>();
         }
-        return TablaSimbolos.funciones;
+        return this.funciones;
     }
 
-    public static void setFunciones(final ArrayList<Function> funciones) {
-        TablaSimbolos.funciones = funciones;
+    public  void setFunciones(final ArrayList<Function> funciones) {
+        this.funciones = funciones;
     }
+
 }
