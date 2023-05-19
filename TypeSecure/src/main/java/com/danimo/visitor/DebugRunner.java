@@ -526,7 +526,8 @@ public class DebugRunner extends Visitor {
                     }else{
                         if(i.getType().equals(Variable.VariableType.DEFINIRLA)){
                             if(!verificarVariables(i.getInstruccions())){
-                                i.setType(Variable.VariableType.VOID);
+                               /* i.setType(Variable.VariableType.VOID);*/
+                                System.out.println("-------------------------------------------------------------la hice void");
                                 System.out.println("3");
                                 System.out.println("4");
                                 if(pso!=null){
@@ -691,6 +692,13 @@ public class DebugRunner extends Visitor {
                 System.out.println(elementos.getClass()+" clOSEEEEEEEEEEE");
                 if(elementos instanceof Return){
                     this.encontro_return=true;
+                    Object ts= elementos.accept(this);
+                    if(ts!=null){
+                        if(ts.getClass().equals(Return.class)){
+                            vr.add((Variable) ((Return) elementos).getInstruccion().accept(this));
+                        }
+                    }
+                }else{
                     Object ts= elementos.accept(this);
                     if(ts!=null){
                         if(ts.getClass().equals(Return.class)){

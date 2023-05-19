@@ -157,7 +157,7 @@ public class EditorPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea1;
-    public static javax.swing.JTextArea jTextArea2;
+    private  javax.swing.JTextArea jTextArea2;
     public javax.swing.JLabel line;
     // End of variables declaration//GEN-END:variables
 }

@@ -1801,17 +1801,26 @@ public class Runner extends Visitor{
                             } else if (pp.getClass().equals(Return.class)) {
                                 if(funcion_ejecutar.getType()!= Variable.VariableType.VOID){
                                     Variable vr_return=(Variable) (((Return)pp).getInstruccion().accept(this));
-                                    if(vr_return.getType().equals(funcion_ejecutar.getType())){
-                                        if(this.table.getParent()!=null){
-                                            this.table=this.table.getParent();
+                                    if(vr_return!=null){
+                                        if (funcion_ejecutar.getType()== Variable.VariableType.DEFINIRLA){
+                                            if(this.table.getParent()!=null){
+                                                this.table=this.table.getParent();
+                                            }
+                                            return vr_return;
+                                        }else{
+                                            if(vr_return.getType().equals(funcion_ejecutar.getType())){
+                                                if(this.table.getParent()!=null){
+                                                    this.table=this.table.getParent();
+                                                }
+                                                return vr_return;
+                                            }else{
+                                                errorForClient.add(new ObjectErr(i.getName(),funcion_ejecutar.getLine(), funcion_ejecutar.getColumn(),"SEMANTICO","FUNCTION--> La variable es de tipo "+vr_return.getType()+" y la funcion necesito un "+funcion_ejecutar.getType()));
+                                                if(this.table.getParent()!=null){
+                                                    this.table= this.table.getParent();
+                                                }
+                                                return null;
+                                            }
                                         }
-                                        return vr_return;
-                                    }else{
-                                        errorForClient.add(new ObjectErr(i.getName(),funcion_ejecutar.getLine(), funcion_ejecutar.getColumn(),"SEMANTICO","FUNCTION--> La variable es de tipo "+vr_return.getType()+" y la funcion necesito un "+funcion_ejecutar.getType()));
-                                        if(this.table.getParent()!=null){
-                                            this.table= this.table.getParent();
-                                        }
-                                        return null;
                                     }
                                 }else{
                                     errorForClient.add(new ObjectErr(i.getName(),funcion_ejecutar.getLine(), funcion_ejecutar.getColumn(),"SEMANTICO","La funcion es de tipo void no debe retornar"));
