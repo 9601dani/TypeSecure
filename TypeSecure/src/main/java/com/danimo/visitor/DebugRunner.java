@@ -511,7 +511,7 @@ public class DebugRunner extends Visitor {
                                 System.out.println("4");
                                 if(pso!=null){
                                     if(pso.getClass().equals(Return.class)){
-                                        errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "la funcion es tipo void, no debes retornar nada"));
+                                        errorForClient.add(new ObjectErr(null, instr.getLine(),instr.getColumn(),"SEMANTICO", "la funcion es tipo void, no debes retornar nada"));
                                         return null;
                                     }
                                 }
@@ -530,7 +530,7 @@ public class DebugRunner extends Visitor {
                                 System.out.println("4");
                                 if(pso!=null){
                                     if(pso.getClass().equals(Return.class)){
-                                        errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "la funcion es tipo void, no debes retornar nada"));
+                                        errorForClient.add(new ObjectErr(null, instr.getLine(),instr.getColumn(),"SEMANTICO", "la funcion es tipo void, no debes retornar nada"));
                                         return null;
                                     }
                                 }
@@ -573,18 +573,18 @@ public class DebugRunner extends Visitor {
                                                         this.table.setFunciones(tmp);
                                                         return variable_de_retorno;
                                                     }else{
-                                                        errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "La variable de retorno no es tipo -> "+ i.getType()));
+                                                        errorForClient.add(new ObjectErr(null, instr.getLine(),instr.getColumn(),"SEMANTICO", "La variable de retorno no es tipo -> "+ i.getType()));
                                                         System.out.println("LA VARIABLE DE RETORNO ES DISTINTO AL DE LA FUNCION");
                                                     }
                                                 }else{
-                                                    errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "SE DEBE RETORNAR UNA VARIABLE"));
+                                                    errorForClient.add(new ObjectErr(null, instr.getLine(),instr.getColumn(),"SEMANTICO", "SE DEBE RETORNAR UNA VARIABLE"));
                                                     System.out.println("DEBE RETORNAR UNA VARIABLE");
                                                 }
                                             }else{
                                                 if(i.getType()==null || i.getType()== Variable.VariableType.DEFINIRLA){
                                                     i.setType(Variable.VariableType.VOID);
                                                 }else{
-                                                    errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "SE DEBE RETORNAR ALGUNA VARIABLE"));
+                                                    errorForClient.add(new ObjectErr(null, instr.getLine(),instr.getColumn(),"SEMANTICO", "SE DEBE RETORNAR ALGUNA VARIABLE"));
                                                     System.out.println("DEBE RETORNAR UNA VARIABLE");
                                                 }
                                             }
@@ -596,7 +596,7 @@ public class DebugRunner extends Visitor {
                                         System.out.println("DEBE RETORNAR UNA VARIABLE");
                                     }
                                 }else{
-                                    errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "Todos los return de la funcion deben ser del mismo tipo"));
+                                    errorForClient.add(new ObjectErr(null, instr.getLine(),instr.getColumn(),"SEMANTICO", "Todos los return de la funcion deben ser del mismo tipo"));
                                     System.out.println("DEBE RETORNAR UNA VARIABLE");
                                 }
                             }
@@ -630,18 +630,18 @@ public class DebugRunner extends Visitor {
                                                     this.table.setFunciones(tmp);
                                                     return variable_de_retorno;
                                                 }else{
-                                                    errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "La variable de retorno no es tipo -> "+ i.getType()));
+                                                    errorForClient.add(new ObjectErr(null, instr.getLine(),instr.getColumn(),"SEMANTICO", "La variable de retorno no es tipo -> "+ i.getType()));
                                                     System.out.println("LA VARIABLE DE RETORNO ES DISTINTO AL DE LA FUNCION");
                                                 }
                                             }else{
-                                                errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "SE DEBE RETORNAR UNA VARIABLE"));
+                                                errorForClient.add(new ObjectErr(null, instr.getLine(),instr.getColumn(),"SEMANTICO", "SE DEBE RETORNAR UNA VARIABLE"));
                                                 System.out.println("DEBE RETORNAR UNA VARIABLE");
                                             }
                                         }else{
                                             if(i.getType()==null || i.getType()== Variable.VariableType.DEFINIRLA){
                                                 i.setType(Variable.VariableType.VOID);
                                             }else{
-                                                errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "SE DEBE RETORNAR ALGUNA VARIABLE"));
+                                                errorForClient.add(new ObjectErr(null, instr.getLine(),instr.getColumn(),"SEMANTICO", "SE DEBE RETORNAR ALGUNA VARIABLE"));
                                                 System.out.println("DEBE RETORNAR UNA VARIABLE");
                                             }
                                         }
@@ -653,7 +653,7 @@ public class DebugRunner extends Visitor {
                                     System.out.println("DEBE RETORNAR UNA VARIABLE");
                                 }
                             }else{
-                                errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "Todos los return de la funcion deben ser del mismo tipo"));
+                                errorForClient.add(new ObjectErr(null, instr.getLine(),instr.getColumn(),"SEMANTICO", "Todos los return de la funcion deben ser del mismo tipo"));
                                 System.out.println("DEBE RETORNAR UNA VARIABLE");
                             }
                         }
