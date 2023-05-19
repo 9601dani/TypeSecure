@@ -15,6 +15,7 @@
     </properties>
 
     <dependencies>
+
         <dependency>
             <groupId>com.github.vbmacher</groupId>
             <artifactId>java-cup-runtime</artifactId>
@@ -25,6 +26,11 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <version>5.9.2</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.moaxcp.graphs</groupId>
+            <artifactId>graphs-graphviz</artifactId>
+            <version>0.17.1</version>
         </dependency>
     </dependencies>
     <build>

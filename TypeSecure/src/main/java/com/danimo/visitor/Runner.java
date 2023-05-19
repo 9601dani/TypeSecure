@@ -281,7 +281,7 @@ public class Runner extends Visitor{
             for(Instruccion instruccion_console: i.getInstruccions()){
                 Variable txts = (Variable) instruccion_console.accept(this);
                 if(txts!=null){
-                    dat+=(String) txts.getValue();
+                    dat+=String.valueOf(txts.getValue());
                 }
             }
             if(!dat.equals("")){
@@ -720,6 +720,11 @@ public class Runner extends Visitor{
             case SQRT2 -> {
                 variable_return.setType(Variable.VariableType.NUMBER);
                 variable_return.setValue(Double.toString(Math.sqrt(2)));
+                return  variable_return;
+            }
+            case RANDOM -> {
+                variable_return.setType(Variable.VariableType.NUMBER);
+                variable_return.setValue(Double.toString(Math.random()));
                 return  variable_return;
             }
             case ABS -> {

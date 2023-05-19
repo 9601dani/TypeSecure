@@ -311,7 +311,8 @@ public class DebugRunner extends Visitor {
             String txt="";
             if(arrayDatos.size()>=1){
                 for(int p=0; p<arrayDatos.size();p++){
-                    txt+=(String) arrayDatos.get(p).getValue();
+
+                    txt+=String.valueOf(arrayDatos.get(p).getValue());
                 }
             }
             if(txt.equals(null)){
@@ -798,6 +799,11 @@ public class DebugRunner extends Visitor {
                 variable_return.setValue(Double.toString(Math.sqrt(2)));
                 return  variable_return;
             }
+            case RANDOM -> {
+                variable_return.setType(Variable.VariableType.NUMBER);
+                variable_return.setValue(Double.toString(Math.random()));
+                return  variable_return;
+            }
             case ABS -> {
                 variable_return.setType(Variable.VariableType.NUMBER);
 
@@ -1026,6 +1032,7 @@ public class DebugRunner extends Visitor {
                 errorForClient.add(new ObjectErr(null,i.getLine(),i.getColumn(),"SEMANTICO","El dato no se encontro _ SQRT"));
                 return null;
             }
+
         }
         return null;
     }

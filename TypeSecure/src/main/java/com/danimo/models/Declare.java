@@ -43,12 +43,10 @@ public class Declare  extends  Instruccion{
 
     @Override
     public String toString() {
-        return "\nDeclare{" +
+        return "Declare{" +
                 "type_modi=" + type_modi +
-                ", asignaciones=" + asignaciones +
-                ", line=" + line +
-                ", column=" + column +
-                '}';
+                "node"  + "[label=\"" + asignaciones.toString() + "\"];\n"+
+                "node1->node}";
     }
 }
 
