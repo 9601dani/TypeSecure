@@ -156,7 +156,7 @@ public class EditorVIew extends javax.swing.JFrame {
             JTextArea textAreaInView = (JTextArea) scrollPane.getViewport().getView();
 
 // Obtener el contenido completo del JTextArea
-            String text = textAreaInView.getText();
+            String text = selectedPanel.getjTextArea1().getText();
             JFileChooser fileChooser = new JFileChooser();
             int seleccion = fileChooser.showSaveDialog(new JFrame());
 
@@ -168,14 +168,14 @@ public class EditorVIew extends javax.swing.JFrame {
                     writer.write(text);
                     writer.close();
                     selectedPanel.currentFilePath=file.getAbsolutePath();
-                    JOptionPane.showMessageDialog(this, "El índice del panel seleccionado se guardó en el archivo.");
+                    JOptionPane.showMessageDialog(null, "El índice del panel seleccionado se guardó en el archivo.");
                 } catch (IOException e) {
-                    JOptionPane.showMessageDialog(this, "Error al guardar el índice del panel seleccionado en el archivo.");
+                    JOptionPane.showMessageDialog(null, "Error al guardar el índice del panel seleccionado en el archivo.");
                     e.printStackTrace();
                 }
             }
         } else {
-            JOptionPane.showMessageDialog(this, "No se ha seleccionado ningún panel para guardar.");
+            JOptionPane.showMessageDialog(null, "No se ha seleccionado ningún panel para guardar.");
         }
 
     }//GEN-LAST:event_jMenuItem2ActionPerformed
@@ -213,45 +213,50 @@ public class EditorVIew extends javax.swing.JFrame {
         if (indexPanelSeleccionado != -1) { // Si hay un panel seleccionado
             EditorPanel selectedPanel = (EditorPanel) jTabbedPane1.getSelectedComponent();
             String variable = selectedPanel.currentFilePath;
-            JScrollPane scrollPane = (JScrollPane) selectedPanel.getComponent(0);
+/*            JScrollPane scrollPane = (JScrollPane) selectedPanel.getComponent(0);
 // Obtener una referencia al JTextArea dentro del JScrollPane
             JTextArea textAreaInView = (JTextArea) scrollPane.getViewport().getView();
+            System.out.println(textAreaInView);
+            System.out.println(textAreaInView.getText());
 // Obtener el contenido completo del JTextArea
-            String text = textAreaInView.getText();
-            if (variable != null && variable!="") {
-                // El archivo ya ha sido guardado anteriormente, guardar los cambios
-                try (BufferedWriter writer = new BufferedWriter(new FileWriter(variable))) {
-                    writer.write(text);
-                     JOptionPane.showMessageDialog(this, "Se guardo correctamente");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                // El archivo no ha sido guardado anteriormente, pedir una ubicación para guardarlo
-                JFileChooser fileChooser = new JFileChooser();
-                int seleccion = fileChooser.showSaveDialog(this);
-
-                if (seleccion == JFileChooser.APPROVE_OPTION) {
-                    // Obtener la ruta del archivo seleccionado
-                    File file = fileChooser.getSelectedFile();
-                    String filePath = file.getAbsolutePath();
-
-                    // Guardar la ruta del archivo
-                    variable = filePath;
-                    selectedPanel.currentFilePath=variable;
-
-                    // Guardar el contenido del JTextArea en el archivo
-                    try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            if(textAreaInView== selectedPanel.getjTextArea1()){*/
+                String text = selectedPanel.getjTextArea1().getText();
+                if (variable != null && variable!="") {
+                    // El archivo ya ha sido guardado anteriormente, guardar los cambios
+                    try (BufferedWriter writer = new BufferedWriter(new FileWriter(variable))) {
                         writer.write(text);
-                        jTabbedPane1.setTitleAt(indexPanelSeleccionado,file.getName());
-                        JOptionPane.showMessageDialog(this, "Se guardo correctamente");
+                        JOptionPane.showMessageDialog(null, "Se guardo correctamente");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                } else {
+                    // El archivo no ha sido guardado anteriormente, pedir una ubicación para guardarlo
+                    JFileChooser fileChooser = new JFileChooser();
+                    int seleccion = fileChooser.showSaveDialog(this);
+
+                    if (seleccion == JFileChooser.APPROVE_OPTION) {
+                        // Obtener la ruta del archivo seleccionado
+                        File file = fileChooser.getSelectedFile();
+                        String filePath = file.getAbsolutePath();
+
+                        // Guardar la ruta del archivo
+                        variable = filePath;
+                        selectedPanel.currentFilePath=variable;
+
+                        // Guardar el contenido del JTextArea en el archivo
+                        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath+".ts"))) {
+                            writer.write(text);
+                            jTabbedPane1.setTitleAt(indexPanelSeleccionado,file.getName());
+                            JOptionPane.showMessageDialog(null, "Se guardo correctamente");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
-            }
+
+            /*}*/
         } else {
-            JOptionPane.showMessageDialog(this, "No se ha seleccionado ningún panel para guardar.");
+            JOptionPane.showMessageDialog(null, "No se ha seleccionado ningún panel para guardar.");
         }
 
 

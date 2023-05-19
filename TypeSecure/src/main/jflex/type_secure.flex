@@ -20,7 +20,7 @@ NUM_DECIMAL    = [0-9]+("."[0-9]+)
 BIG_INT        = ([0-9]+"n")
 COMENTARIO_SIMPLE =  "//".*
 COMENTARIO_COM    = [/][*][^*]*[*][/]
-SYM =   [@¨~$¡?·]+
+SYM =   [@¨~$¡?·¿]+
 
 
 %{

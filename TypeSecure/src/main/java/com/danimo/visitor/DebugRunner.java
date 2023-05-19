@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import static com.danimo.Main.view_console;
 import static com.danimo.ParserHandleSecure.generarTablaSym;
+import static com.danimo.ParserHandleSecure.generarTablaSyms;
 
 public class DebugRunner extends Visitor {
     private static ArrayList<ObjectErr> errorForClient= TypeSecureError.getTypeErrorSingleton().errores;
@@ -598,7 +599,7 @@ public class DebugRunner extends Visitor {
                                         System.out.println("DEBE RETORNAR UNA VARIABLE");
                                     }
                                 }else{
-                                    errorForClient.add(new ObjectErr(null, instr.getLine(),instr.getColumn(),"SEMANTICO", "Todos los return de la funcion deben ser del mismo tipo"));
+                                    errorForClient.add(new ObjectErr(null, instr.getLine(),instr.getColumn(),"SEMANTICO", "Todos los return de la funcion deben ser del mismo tipo/ falta return al final"));
                                     System.out.println("DEBE RETORNAR UNA VARIABLE");
                                 }
                             }
@@ -655,7 +656,7 @@ public class DebugRunner extends Visitor {
                                     System.out.println("DEBE RETORNAR UNA VARIABLE");
                                 }
                             }else{
-                                errorForClient.add(new ObjectErr(null, instr.getLine(),instr.getColumn(),"SEMANTICO", "Todos los return de la funcion deben ser del mismo tipo"));
+                                errorForClient.add(new ObjectErr(null, instr.getLine(),instr.getColumn(),"SEMANTICO", "Todos los return de la funcion deben ser del mismo tipo/ falta return al final"));
                                 System.out.println("DEBE RETORNAR UNA VARIABLE");
                             }
                         }
@@ -698,14 +699,14 @@ public class DebugRunner extends Visitor {
                             vr.add((Variable) ((Return) elementos).getInstruccion().accept(this));
                         }
                     }
-                }else{
+                }/*else{
                     Object ts= elementos.accept(this);
                     if(ts!=null){
                         if(ts.getClass().equals(Return.class)){
                             vr.add((Variable) ((Return) elementos).getInstruccion().accept(this));
                         }
                     }
-                }
+                }*/
             });
             if(vr.size()>0){
                 Variable.VariableType tipo= vr.get(0).getType();
@@ -721,6 +722,7 @@ public class DebugRunner extends Visitor {
                 return true; // Todos los elementos tienen el mismo tipo.
 
             }else{
+                System.out.println("no hay returnrrrrrrrrrrrrrrrrrr");
                 return false;
             }
         }
@@ -1829,7 +1831,7 @@ public class DebugRunner extends Visitor {
     @Override
     public Object visit(GetTable i) {
         if(this.table!=null){
-           /* generarTablaSym(this.table);*/
+          /*  generarTablaSyms(this.table);*/
             return null;
         }
         return null;

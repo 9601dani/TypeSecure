@@ -10,7 +10,7 @@ import com.danimo.manageError.TypeSecureError;
 import com.danimo.objects.NumeroLinea;
 import java.awt.Color;
 import java.util.ArrayList;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 
 /**
@@ -149,6 +149,14 @@ public class EditorPanel extends javax.swing.JPanel {
 
     public  String getPath(){
         return this.currentFilePath;
+    }
+
+    public JTextArea getjTextArea2() {
+        return this.jTextArea2;
+    }
+
+    public JTextArea getjTextArea1() {
+        return this.jTextArea1;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
