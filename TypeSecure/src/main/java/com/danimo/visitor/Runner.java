@@ -111,8 +111,6 @@ public class Runner extends Visitor{
                     try{
                         switch (variable.getType()){
                             case BIGINT -> {
-                               /* System.out.println(this.table);*/
-                                System.out.println("VARIABLEEEEEEEEEEE---------------------------"+ variable.getValue());
                                 int result=  extractNumber((String)variable.getValue());
                                 if(result==-1){
                                     JOptionPane.showMessageDialog(null,"error aqui");
@@ -287,7 +285,6 @@ public class Runner extends Visitor{
                 }
             }
             if(!dat.equals("")){
-                System.out.println("retorne alguio en consoleeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
                 view_console.add(dat+"\n");
             }
             return null;
@@ -439,7 +436,6 @@ public class Runner extends Visitor{
 
     @Override
     public Instruccion visit(ForState i) {
-        System.out.println("--------------RUNNER FOR-------");
         TablaSimbolos tmp= new TablaSimbolos(this.table);
         tmp.setFunciones(this.table.getFunciones());
         this.table= tmp;
@@ -484,19 +480,15 @@ public class Runner extends Visitor{
                 }
                 if(!isBreak){
                     i.getSalto().accept(this);
+                    vr= (Variable)i.getCondition().accept(this);
+                }else{
                     return null;
                 }
                 if(isContinue){
-                    /*System.out.println("continue");*/
                 }
             }else{
                 break;
             }
-            /* if(this.table.getParent()!=null){
-                 System.out.println("setee el scope");
-                 this.table= this.table.getParent();
-                 System.out.println("-------"+ this.table.toString());
-             }*/
             if(isBreak){
                 vr.setValue("false");
             }else{
@@ -508,17 +500,13 @@ public class Runner extends Visitor{
         }
         if(this.table.getParent()!=null){
             this.table= this.table.getParent();
-            /*System.out.println("tablaaaaa del final"+this.table.toString() );*/
         }
         return null;
     }
 
     @Override
     public Variable visit(Function i) {
-        System.out.println("Runner FUNCTION");
-        System.out.println(i.getOnTable());
         if(!i.getOnTable()){
-            System.out.println(" aqui no hago nada");
         }else{
             ArrayList<Function> tmp= this.table.getFunciones();
             this.table= new TablaSimbolos(this.table);
@@ -530,7 +518,6 @@ public class Runner extends Visitor{
                         Variable n_variable= (Variable)parametro_fun.accept(this);
                         if(n_variable== null){
                             //ERROR PARAMETRO NO DEFINIDO
-                            System.out.println("VARIABLE NADA QUE VER");
                         }else{
                            /* this.table.nuevo(n_variable);*/
                         }
@@ -538,12 +525,9 @@ public class Runner extends Visitor{
                 }
             }
             if(i.getInstruccions()!=null){
-                System.out.println("no es nulo");
                 for(Instruccion instr: i.getInstruccions()){
                     Object pso=instr.accept(this);
-                    System.out.printf("TIPO DE FUNCION ->"+ i.getType());
                     if(i.getType().equals(Variable.VariableType.VOID)){
-                        System.out.println("es tipo void----------------------------");
                         if(pso!=null){
                             if(pso.getClass().equals(Return.class)){
                                 errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "la funcion es tipo void, no debes retornar nada"));
@@ -552,19 +536,10 @@ public class Runner extends Visitor{
                         }
                     }else{
                         if(this.verificarVariables(i.getInstruccions())){
-                            System.out.println("1");
-                            System.out.println("\n");
-                            System.out.println(this.table.toString());
                             if(i.getInstruccions().get(i.getInstruccions().size()-1) instanceof Return){
-                                System.out.println("2");
-                                /*if(pso!=null){*/
-                                    System.out.println("3");
-                                    System.out.println("4");
                                     Object variable_returrn=((Variable)pso);
                                     if(variable_returrn!=null){
                                     if(variable_returrn.getClass().equals(Variable.class)){
-                                            System.out.println("5");
-                                            System.out.println("TYPO VARIABLE RETORNO-> "+((Variable) variable_returrn).getType());
                                             if(i.getType()==null || i.getType()== Variable.VariableType.DEFINIRLA){
                                                 i.setType(((Variable) variable_returrn).getType());
                                             }
@@ -573,11 +548,9 @@ public class Runner extends Visitor{
                                                 /*i.setOnTable(true);
                                                 this.table.getFunciones().add(i);
                                                 this.table=this.table.getParent();*/
-                                                System.out.println("RETORNE VARIABLE A LO QUE SI");
                                                 return variable_de_retorno;
                                             }else{
                                                 errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "La variable de retorno no es tipo -> "+ i.getType()));
-                                                System.out.println("LA VARIABLE DE RETORNO ES DISTINTO AL DE LA FUNCION");
                                             }
                                     } else if (variable_returrn.getClass().equals(Return.class)) {
                                         System.out.println("-------------------------------------------------------------- TIPO RETURN ");
@@ -598,31 +571,22 @@ public class Runner extends Visitor{
                                         }*/
                                     } else{
                                             errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "SE DEBE RETORNAR UNA VARIABLE"));
-                                            System.out.println("DEBE RETORNAR UNA VARIABLE");
                                         }
-
                                     }
-                                /*}else{
-                                    System.out.println("pso nullll");
-                                }*/
                             }else{
                                 errorForClient.add(new ObjectErr(null, i.getInstruccions().get(i.getInstruccions().size()-1).getLine(),i.getInstruccions().get(i.getInstruccions().size()-1).getColumn(),"SEMANTICO", "La ultima instruccion debe ser un RETURN o si hay instrucciones abajo del return no se ejecutaran"));
-                                System.out.println("DEBE RETORNAR UNA VARIABLE");
                             }
                         }else{
                             errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "Todos los return de la funcion deben ser del mismo tipo"));
-                            System.out.println("DEBE RETORNAR UNA VARIABLE");
                         }
                     }
                 }
 
             }
-            System.out.println("valioooooooooooooooooo");
             this.table= this.table.getParent();
             return null;
 
         }
-        System.out.println("mandeeeeeeeee nullllllito ");
         return null;
     }
     public Boolean verificarVariables(ArrayList<Instruccion> array_instr){
@@ -638,7 +602,6 @@ public class Runner extends Visitor{
         if(vr.size()>0){
             Variable.VariableType tipo= vr.get(0).getType();
             for (int i = 0; i < vr.size(); i++) {
-                System.out.println("LA "+i+" ES TIPO "+vr.get(i).getType());
                 if (vr.get(i).getType() != tipo) {
                     return false; // Se encontró un elemento con un tipo diferente, por lo tanto no todos los elementos tienen el mismo tipo.
                 }
@@ -651,7 +614,6 @@ public class Runner extends Visitor{
     }
     @Override
     public Instruccion visit(IfState i) {
-        System.out.println("RUNNER IF");
         try{
             if(i.getInstruccion()!=null){
                 Variable comparacion=(Variable) i.getInstruccion().accept(this);
@@ -676,7 +638,6 @@ public class Runner extends Visitor{
                                     }
                                     return(Instruccion) eleme;
                                 } else if (ret.getClass().equals(Return.class)) {
-                                    System.out.println("encontre return "+(((Return) ret).getInstruccion().accept(this)));
                                     Return rst= (Return) ret;
                                     if(this.table.getParent()!=null){
                                         this.table= this.table.getParent();
@@ -722,7 +683,6 @@ public class Runner extends Visitor{
                             }
                             return null;
                         }else{
-                            System.out.println("NO HAY NADA SI ES FALSO");
                         }
                         return null;
                     }
@@ -1145,9 +1105,6 @@ public class Runner extends Visitor{
             ope_rigth= null;
         }
         Variable variable_return= new Variable();
-/*        System.out.println("es "+i.getType());
-        System.out.println("TABLA DE SIMBOLOS ANTES DE OPERACION BINARIA");
-        System.out.println(this.table);*/
         if(ope_left!=null && ope_rigth!=null && (String)ope_left.getValue()!= Variable.VariableType.UNDEFINED.toString() && (String)ope_rigth.getValue()!= Variable.VariableType.UNDEFINED.toString()){
             if(ope_left.getType().equals(ope_rigth.getType())){
                 switch (i.getType()){
@@ -1652,7 +1609,6 @@ public class Runner extends Visitor{
                     if(i.getInstruccions()!=null){
                         int contador=1;
                         for(Instruccion ele: i.getInstruccions()){
-                            System.out.println("CONTADOR DEL WHILE + "+contador);
                             contador++;
                             Object inst= ele.accept(this);
                             if(inst!=null){
@@ -1666,7 +1622,6 @@ public class Runner extends Visitor{
                                     isContinue=true;
                                     break;
                                 } else if (inst.getClass().equals(Return.class)) {
-                                    System.out.println("retorneeeee en el while RETURN");
                                     Return rst= (Return) inst;
                                     if(this.table.getParent()!=null){
                                         this.table= this.table.getParent();
@@ -1676,8 +1631,6 @@ public class Runner extends Visitor{
                                     /*vr=(Variable) inst;*/
                                 }
                             }else{
-                                /*ele.accept(this);
-                                System.out.println();*/
                             }
                         }
                     }else{
@@ -1748,22 +1701,18 @@ public class Runner extends Visitor{
 
     @Override
     public Variable visit(Call i) {
-        System.out.println("HICE UN CALL");
         ArrayList<Function> tmp= this.table.getFunciones();
         this.table= new TablaSimbolos(this.table);
         this.table.setFunciones(tmp);
         Variable vr= new Variable();
         if(i.getAsignaciones()!=null){
-            System.out.println("1 call");
             if(this.table.getFunctionWithName(i.getName())!=null){
-                System.out.println("----------------------------------> "+this.table.getFunctionWithName(i.getName()).toString());
                 this.variables_nuevas_funcion.clear();
                 for(Instruccion asignaciones_call: i.getAsignaciones()){
                     Object result=asignaciones_call.accept(this);
                     if(result.getClass().equals(Variable.class)){
                         Object vdd_result= ((Variable)result);
                         if(vdd_result.getClass().equals(Variable.class)){
-                            System.out.println((((Variable) vdd_result).getValue().toString()));
                             vr.setId(((Variable) vdd_result).getId());
                             vr.setValue((String)((Variable) vdd_result).getValue());
                             vr.setType(((Variable) vdd_result).getType());
@@ -1787,33 +1736,20 @@ public class Runner extends Visitor{
                         nv_parametro.setValue((String)((Variable)i.getAsignaciones().get(p).accept(this)).getValue());
                         this.table.nuevo(nv_parametro);
                     }
-                    System.out.println("ESTOY A PUNTO DE EJECUTAR LA FUNCION");
-                    /*Object pp=funcion_ejecutar.accept(this);
-                    if(pp!=null){
-                        System.out.println(pp.getClass());
-                        if(pp.getClass().equals(Variable.class)){
-                            System.out.println("reeeeeeeeeeeeeeeeeeeeeeeeeeeeeee "+ pp.toString());
-                            return ((Variable)pp);
-                        }
-                    }*/
                     for(Instruccion fs: funcion_ejecutar.getInstruccions()){
-                        System.out.println("ejecutando funcion");
                         Object pp= fs.accept(this);
                         if(pp!=null){
-                            System.out.println(pp.getClass());
                             if(pp.getClass().equals(Variable.class)){
                                 Variable vr_return=((Variable)pp);
                                 if(this.table.getParent()!=null){
                                     this.table=this.table.getParent();
                                 }
-                                System.out.println("reeeeeeeeeeeeeeeeeeeeeeeeeeeeeee "+ pp.toString());
                                 return  vr_return;
                             } else if (pp.getClass().equals(Return.class)) {
                                 Variable vr_return=(Variable) (((Return)pp).getInstruccion().accept(this));
                                 if(this.table.getParent()!=null){
                                     this.table=this.table.getParent();
                                 }
-                                System.out.println("RETORNARE VARIABLE AQUIIIIII-> "+vr_return.toString());
                                 return vr_return;
                             }
                         }
@@ -1824,37 +1760,25 @@ public class Runner extends Visitor{
                     return null;
                 }
                 this.table= this.table.getParent();
-                System.out.println("FIN NULL");
                 return null;
             }else{
                 this.table= this.table.getParent();
                 errorForClient.add(new ObjectErr(i.getName(),i.getLine(), i.getColumn(),"SEMANTICO","La funcion no existe "));
                 return null;
             }
-           /* System.out.println("aqui mandare algo");
-            vr.setId("yo mande");
-            vr.setValue("2");
-            vr.setType(Variable.VariableType.NUMBER);
-            return vr;*/
         }else{
-            System.out.println("222");
             if(this.table.getFunctionWithName(i.getName())!=null){
-                System.out.println("ejecutare la funcion " + i.getName());
                 Function funcion_ejecutar= ((Function)this.table.getFunctionWithName(i.getName()));
                 if(funcion_ejecutar.getType().equals(Variable.VariableType.VOID)){
                     for(Instruccion fs: funcion_ejecutar.getInstruccions()){
-                        System.out.println("ejecutando funcion");
                         Object pp= fs.accept(this);
                         if(pp!=null){
-                            System.out.println(pp.getClass()+" ---->");
                             if(pp.getClass().equals(Variable.class)){
-                                System.out.println("reeeeeeeeeeeeeeeeeeeeeeeeeeeeeee "+ pp.toString());
 
                                 Variable vr_return=((Variable)pp);
                                 if(this.table.getParent()!=null){
                                     this.table=this.table.getParent();
                                 }
-                                System.out.println("reeeeeeeeeeeeeeeeeeeeeeeeeeeeeee "+ pp.toString());
                                 return vr_return;
                             } else if (pp.getClass().equals(Return.class)) {
                                 Variable vr_return=(Variable) (((Return)pp).getInstruccion().accept(this));
@@ -1869,23 +1793,19 @@ public class Runner extends Visitor{
                     return null;
                 }else{
                     for(Instruccion fs: funcion_ejecutar.getInstruccions()){
-                        System.out.println("ejecutando funcion");
                         Object pp= fs.accept(this);
                         if(pp!=null){
-                            System.out.println(pp.getClass());
                             if(pp.getClass().equals(Variable.class)){
                                 Variable vr_return=((Variable)pp);
                                 if(this.table.getParent()!=null){
                                     this.table=this.table.getParent();
                                 }
-                                System.out.println("reeeeeeeeeeeeeeeeeeeeeeeeeeeeeee "+ pp.toString());
                                 return vr_return;
                             } else if (pp.getClass().equals(Return.class)) {
                                 Variable vr_return=(Variable) (((Return)pp).getInstruccion().accept(this));
                                 if(this.table.getParent()!=null){
                                     this.table=this.table.getParent();
                                 }
-                                System.out.println("RETORNARE VARIABLE AQUIIIIII-> "+vr_return.toString());
                                 return vr_return;
                             }
                         }
