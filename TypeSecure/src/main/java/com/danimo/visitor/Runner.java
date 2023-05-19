@@ -49,7 +49,7 @@ public class Runner extends Visitor{
                         return null;
                     }
                 }else{
-                    // errorForClient.add(new ObjectErr(" ",i.getLine(), i.getColumn(), "SEMANTICO","No existe un valor para esto"));
+                     errorForClient.add(new ObjectErr(" ",i.getLine(), i.getColumn(), "SEMANTICO","No existe un valor para esto"));
                     return null;
                 }
             }
@@ -69,7 +69,7 @@ public class Runner extends Visitor{
                 tmp=(Variable) i.getValue().accept(this);
                 if(variable.getType().equals(tmp.getType())){
                     variable.setValue(tmp.getValue());
-                    return  variable;
+                    return  null;
                 }else{
                     errorForClient.add(new ObjectErr(variable.getId(),i.getLine(), i.getColumn(), "SEMANTICO","Variable tipo: "+variable.getType()+" y dato nuevo es: "+ tmp.getType()));
                     return null;
@@ -286,6 +286,7 @@ public class Runner extends Visitor{
             }
             if(!dat.equals("")){
                 view_console.add(dat+"\n");
+                return null;
             }
             return null;
         }else{
@@ -329,34 +330,39 @@ public class Runner extends Visitor{
 
     @Override
     public Instruccion visit(DoWhile i) {
+       // System.out.println("------------DO WHILE----------");
         try{
-            Boolean isBreak=false;
             Variable vr=new Variable();
             vr.setValue("true");
             vr.setType(Variable.VariableType.BOOLEAN);
             if(vr.getType()== Variable.VariableType.BOOLEAN){
-                TablaSimbolos tmp= new TablaSimbolos(this.table);
-                this.table=tmp;
                 while(((String)vr.getValue()).equalsIgnoreCase("true")){
+                    Boolean isBreak=false;
                     Boolean isContinue=false;
                     if(i.getInstruccions()==null){
                         break;
                     }else{
+                        ArrayList<Function> tmp= this.table.getFunciones();
+                        this.table= new TablaSimbolos(this.table);
+                        this.table.setFunciones(tmp);
                         int contador=1;
                         for(Instruccion ele: i.getInstruccions()){
+                            if( ele.getClass().equals(OnlyAssingment.class)){
+                               // System.out.println("despues de acept------------------------------------------------------------------------------"+ ele);
+                            }
                             Object inst= ele.accept(this);
                             if(inst!=null){
                                 if(inst.getClass().equals(Break.class)){
                                             /*vr=(Variable) i.getOperation().accept(this);*/
-                                            if(this.table.getParent()!=null){
+                                           /* if(this.table.getParent()!=null){
                                                 this.table=this.table.getParent();
-                                            }
+                                            }*/
                                             isBreak=true;
                                             break;
                                 } else if (inst.getClass().equals(Continue.class)) {
-                                    if(this.table.getParent()!=null){
+                                   /* if(this.table.getParent()!=null){
                                         this.table=this.table.getParent();
-                                    }
+                                    }*/
                                     isContinue=true;
                                     break;
                                 }else if (inst.getClass().equals(Return.class)) {
@@ -367,40 +373,50 @@ public class Runner extends Visitor{
                                     return (Instruccion)rst;
                                 }
                                 else{
-                                    vr=(Variable) inst;
+                                    /*vr=(Variable) inst;*/
                                 }
                             }else{
                                /* ele.accept(this);*/
                             }
                         }
+                        this.table= this.table.getParent();
                     }
                     if(isBreak){
                         vr.setValue("false");
+                        isBreak=false;
+                        return null;
+                       /* this.table= this.table.getParent();*/
+                       /* break;*/
                     }else{
                         vr=(Variable) i.getOperation().accept(this);
                     }
-                    if((String)vr.getValue()==null){
+                    /*if((String)vr.getValue()==null){
                         vr.setValue("false");
-                    }
+                        *//*this.table= this.table.getParent();*//*
+                      *//*  break;*//*
+                    }*/
                 }
-                if(this.table.getParent()!=null){
+
+                /*if(this.table.getParent()!=null){
                     this.table=this.table.getParent();
-                }
+                }*/
             }else {
                 errorForClient.add(new ObjectErr(null,i.getOperation().getLine(),i.getOperation().getColumn(),"Semantico","La condicion debe de ser un boolean"));
                 return null;
             }
-            return null;
+
         }catch (Exception e){
             e.printStackTrace();
             return null;
         }
+        return null;
     }
 
     @Override
     public Instruccion visit(ElseState i) {
-        TablaSimbolos table_else= new TablaSimbolos(this.table);
-        this.table= table_else;
+        ArrayList<Function> tmp= this.table.getFunciones();
+        this.table= new TablaSimbolos(this.table);
+        this.table.setFunciones(tmp);
         if(i.getInstruccions()!=null){
             for (Instruccion ele_else: i.getInstruccions()){
                 Object ret=ele_else.accept(this);
@@ -446,12 +462,17 @@ public class Runner extends Visitor{
         Variable vr= (Variable)i.getCondition().accept(this);
         if(vr==null){
             errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "La condicion es nula"));
-            this.table= this.table.getParent();
+            if(this.table.getParent()!=null){
+                this.table= this.table.getParent();
+            }
             return null;
         }
         if(vr.getType()!= Variable.VariableType.BOOLEAN){
             errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "La comparacion del for debe ser tipo Boolean"));
-            this.table= this.table.getParent();
+            if(this.table.getParent()!=null){
+                this.table= this.table.getParent();
+                this.table= this.table.getParent();
+            }
             return null;
         }
         int line;
@@ -459,6 +480,9 @@ public class Runner extends Visitor{
         while(((String)vr.getValue()).equalsIgnoreCase("true")){
             Boolean isContinue=false;
             if(i.getInstruccions()!=null){
+                TablaSimbolos tmps= new TablaSimbolos(this.table);
+                tmps.setFunciones(this.table.getFunciones());
+                this.table= tmps;
                 for(Instruccion instr_for: i.getInstruccions()){
                     Object tps=instr_for.accept(this);
                     if(tps!=null){
@@ -477,7 +501,9 @@ public class Runner extends Visitor{
                         }
                     }else{
                     }
+
                 }
+                this.table=this.table.getParent();
                 if(!isBreak){
                     i.getSalto().accept(this);
                     vr= (Variable)i.getCondition().accept(this);
@@ -541,6 +567,7 @@ public class Runner extends Visitor{
                                     Object variable_returrn=((Variable)pso);
                                     if(variable_returrn!=null){
                                     if(variable_returrn.getClass().equals(Variable.class)){
+                                        //System.out.println("------------------------------------------------------------------------------------------------------------------alm");
                                             if(i.getType()==null || i.getType()== Variable.VariableType.DEFINIRLA){
                                                 i.setType(((Variable) variable_returrn).getType());
                                             }
@@ -549,12 +576,14 @@ public class Runner extends Visitor{
                                                 /*i.setOnTable(true);
                                                 this.table.getFunciones().add(i);
                                                 this.table=this.table.getParent();*/
+                                                if(this.table.getParent()!=null){
+                                                    this.table= this.table.getParent();
+                                                }
                                                 return variable_de_retorno;
                                             }else{
-                                                errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "La variable de retorno no es tipo -> "+ i.getType()));
+                                                errorForClient.add(new ObjectErr(null, i.getLine(),i.getColumn(),"SEMANTICO", "La variable de retorno no es tipo -> "+ i.getType()));;
                                             }
                                     } else if (variable_returrn.getClass().equals(Return.class)) {
-                                        System.out.println("-------------------------------------------------------------- TIPO RETURN ");
                                         /*System.out.println("TYPO VARIABLE RETORNO-> "+((Variable) variable_returrn).getType());*/
                                         /*if(i.getType()==null || i.getType()== Variable.VariableType.DEFINIRLA){
                                             i.setType(((Variable) variable_returrn).getType());
@@ -584,7 +613,9 @@ public class Runner extends Visitor{
                 }
 
             }
-            this.table= this.table.getParent();
+            if(this.table.getParent()!=null){
+                this.table= this.table.getParent();
+            }
             return null;
 
         }
@@ -684,8 +715,8 @@ public class Runner extends Visitor{
                             }
                             return null;
                         }else{
+                            return null;
                         }
-                        return null;
                     }
 
                 }else{
@@ -1605,15 +1636,17 @@ public class Runner extends Visitor{
         try{
             Boolean isBreak=false;
             Variable vr=(Variable) i.getOperation().accept(this);
-
+            /*TablaSimbolos tmp= new TablaSimbolos(this.table);
+            tmp.setFunciones(this.table.getFunciones());
+            this.table=tmp;*/
             if(vr.getType()== Variable.VariableType.BOOLEAN){
-                TablaSimbolos tmp= new TablaSimbolos(this.table);
-                tmp.setFunciones(this.table.getFunciones());
-                this.table=tmp;
                 while(((String)vr.getValue()).equalsIgnoreCase("true")){
                     Boolean isContinue=false;
                     if(i.getInstruccions()!=null){
                         int contador=1;
+                        TablaSimbolos tmps= new TablaSimbolos(this.table);
+                        tmps.setFunciones(this.table.getFunciones());
+                        this.table=tmps;
                         for(Instruccion ele: i.getInstruccions()){
                             contador++;
                             Object inst= ele.accept(this);
@@ -1632,31 +1665,45 @@ public class Runner extends Visitor{
                                     if(this.table.getParent()!=null){
                                         this.table= this.table.getParent();
                                     }
+                                    this.table= this.table.getParent();
                                     return (Instruccion)rst;
                                 }else{
-                                    /*vr=(Variable) inst;*/
+                                   /* vr=(Variable) inst;*/
                                 }
                             }else{
+
                             }
                         }
-                    }else{
-                        break;
-                    }
-                    if(isBreak){
-                        if(this.table.getParent()!=null){
+                        this.table=this.table.getParent();
+                    }/*else{
+                       *//* if(this.table.getParent()!=null){
                             this.table=this.table.getParent();
-                        }
+                        }*//*
+                        break;
+                    }*/
+                    if(isBreak){
+                        /*if(this.table.getParent()!=null){
+                            this.table=this.table.getParent();
+                        }*/
+                       /* this.table= this.table.getParent();*/
+                        isBreak=false;
                         vr.setValue("false");
                         return new Break(i.getLine(),i.getColumn());
-                    }else{
-                        vr=(Variable) i.getOperation().accept(this);
                     }
+                        vr=(Variable) i.getOperation().accept(this);
+
                     if(vr==null){
+                        JOptionPane.showMessageDialog(null,"si es nuloooo");
                         vr= new Variable();
                         vr.setValue("false");
+                       /* if(this.table.getParent()!=null){
+                            this.table.getParent();
+                        }*/
                     }
                 }
+              /*  this.table=this.table.getParent();*/
             }else {
+                /*this.table= this.table.getParent();*/
                 errorForClient.add(new ObjectErr(null,i.getOperation().getLine(),i.getOperation().getColumn(),"Semantico","La condicion debe de ser un boolean"));
                 return null;
             }
@@ -1761,10 +1808,16 @@ public class Runner extends Visitor{
                                         return vr_return;
                                     }else{
                                         errorForClient.add(new ObjectErr(i.getName(),funcion_ejecutar.getLine(), funcion_ejecutar.getColumn(),"SEMANTICO","FUNCTION--> La variable es de tipo "+vr_return.getType()+" y la funcion necesito un "+funcion_ejecutar.getType()));
+                                        if(this.table.getParent()!=null){
+                                            this.table= this.table.getParent();
+                                        }
                                         return null;
                                     }
                                 }else{
                                     errorForClient.add(new ObjectErr(i.getName(),funcion_ejecutar.getLine(), funcion_ejecutar.getColumn(),"SEMANTICO","La funcion es de tipo void no debe retornar"));
+                                    if(this.table.getParent()!=null){
+                                        this.table= this.table.getParent();
+                                    }
                                     return null;
                                 }
                             }
@@ -1772,13 +1825,19 @@ public class Runner extends Visitor{
                     }
                 }else{
                     errorForClient.add(new ObjectErr(i.getName(),i.getLine(), i.getColumn(),"SEMANTICO","La cantidad de atributos de la funcion es distinto"));
-                    this.table= this.table.getParent();
+                    if(this.table.getParent()!=null){
+                        this.table= this.table.getParent();
+                    }
                     return null;
                 }
-                this.table= this.table.getParent();
+                if(this.table.getParent()!=null){
+                    this.table= this.table.getParent();
+                }
                 return null;
             }else{
-                this.table= this.table.getParent();
+                if(this.table.getParent()!=null){
+                    this.table= this.table.getParent();
+                }
                 errorForClient.add(new ObjectErr(i.getName(),i.getLine(), i.getColumn(),"SEMANTICO","La funcion no existe "));
                 return null;
             }
@@ -1796,6 +1855,9 @@ public class Runner extends Visitor{
                                     this.table=this.table.getParent();
                                 }
                                 return vr_return;*/
+                                if(this.table.getParent()!=null){
+                                    this.table= this.table.getParent();
+                                }
                                 errorForClient.add(new ObjectErr(i.getName(),funcion_ejecutar.getLine(), funcion_ejecutar.getColumn(),"SEMANTICO","La funcion es de tipo void  no debe retornar"));
                                 return null;
                             } else if (pp.getClass().equals(Return.class)) {
@@ -1804,12 +1866,17 @@ public class Runner extends Visitor{
                                     this.table=this.table.getParent();
                                 }
                                 return vr_return;*/
+                                if(this.table.getParent()!=null){
+                                    this.table= this.table.getParent();
+                                }
                                 errorForClient.add(new ObjectErr(i.getName(),funcion_ejecutar.getLine(), funcion_ejecutar.getColumn(),"SEMANTICO","La funcion es de tipo void no debe retornar "));
                                 return null;
                             }
                         }
                     }
-                    this.table=this.table.getParent();
+                    if(this.table.getParent()!=null){
+                        this.table= this.table.getParent();
+                    }
                     return null;
                 }else{
                     for(Instruccion fs: funcion_ejecutar.getInstruccions()){
@@ -1829,6 +1896,9 @@ public class Runner extends Visitor{
                                     }
                                     return vr_return;
                                 }else{
+                                    if(this.table.getParent()!=null){
+                                        this.table= this.table.getParent();
+                                    }
                                     errorForClient.add(new ObjectErr(i.getName(),funcion_ejecutar.getLine(), funcion_ejecutar.getColumn(),"SEMANTICO","FUNCION-> La variable es de tipo "+vr_return.getType()+" y la funcion necesito un "+funcion_ejecutar.getType()));
                                     return null;
                                 }
@@ -1838,7 +1908,9 @@ public class Runner extends Visitor{
                     }
                 }
             }else{
-                this.table= this.table.getParent();
+                if(this.table.getParent()!=null){
+                    this.table= this.table.getParent();
+                }
                 errorForClient.add(new ObjectErr(i.getName(),i.getLine(), i.getColumn(),"SEMANTICO","La funcion no existe "));
                 return null;
             }
